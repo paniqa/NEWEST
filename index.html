@@ -7,8 +7,8 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --primary-color: #191970; /* Midnight Blue */
-            --secondary-color: #4169E1; /* Royal Blue */
+            --primary-color: #191970;
+            --secondary-color: #4169E1;
             --background-color: #f0f0f0;
             --card-color: #ffffff;
         }
@@ -332,8 +332,11 @@
 
     <script>
         // Инициализация Telegram WebApp
-        Telegram.WebApp.ready();
-        Telegram.WebApp.expand();
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.ready();
+            tg.expand();
+        }
 
         // Состояние игры
         const gameState = {
@@ -351,7 +354,95 @@
             confirmationText: document.getElementById('confirmationText')
         };
 
-        // Показать вкладку с анимацией
+        // Функции для работы с хранилищем
+        const STORAGE_KEY = 'chirkashi_save';
+        
+        async function saveGame() {
+            const saveData = {
+                currency: gameState.currency,
+                inventory: gameState.inventory,
+                character: gameState.selectedCharacter,
+                timestamp: Date.now()
+            };
+            
+            try {
+                if (tg?.CloudStorage) {
+                    await tg.CloudStorage.setItem(STORAGE_KEY, JSON.stringify(saveData));
+                } else {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(saveData));
+                }
+            } catch (error) {
+                console.error('Ошибка сохранения:', error);
+            }
+        }
+
+        async function loadGame() {
+            try {
+                let savedData = null;
+                
+                if (tg?.CloudStorage) {
+                    const cloudData = await tg.CloudStorage.getItem(STORAGE_KEY);
+                    if (cloudData) savedData = JSON.parse(cloudData);
+                }
+                
+                if (!savedData) {
+                    const localData = localStorage.getItem(STORAGE_KEY);
+                    if (localData) savedData = JSON.parse(localData);
+                }
+                
+                if (savedData) {
+                    gameState.currency = savedData.currency || 0;
+                    gameState.inventory = savedData.inventory || [];
+                    gameState.selectedCharacter = savedData.character || null;
+                    updateUI();
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки:', error);
+            }
+        }
+
+        // Игровые функции с автосохранением
+        function earnCurrency() {
+            const monster = elements.monster;
+            monster.classList.add('hit');
+            setTimeout(() => monster.classList.remove('hit'), 300);
+            
+            gameState.currency++;
+            updateUI();
+            saveGame();
+        }
+
+        function selectCharacter(character) {
+            gameState.selectedCharacter = character;
+            updateUI();
+            showAlert(`Вы выбрали персонажа: ${getCharacterName(character)}`);
+            saveGame();
+        }
+
+        function confirmPurchase() {
+            const { item, price } = gameState.currentPurchase;
+            if (gameState.currency >= price) {
+                gameState.currency -= price;
+                gameState.inventory.push(item);
+                updateUI();
+                showAlert(`Вы успешно купили ${getItemName(item)}!`);
+                saveGame();
+            } else {
+                showAlert('Недостаточно Чиркашей!');
+            }
+            hideConfirmation();
+        }
+
+        // Вспомогательные функции
+        function showAlert(message) {
+            if (tg?.showAlert) {
+                tg.showAlert(message);
+            } else {
+                alert(message);
+            }
+        }
+
+        // Остальные функции из оригинального кода
         function showTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
@@ -364,52 +455,10 @@
             document.querySelector(`.tab[onclick="showTab('${tabId}')"]`).classList.add('active');
         }
 
-        // Заработать валюту
-        function earnCurrency() {
-            const monster = document.getElementById('monster');
-            monster.classList.add('hit');
-            setTimeout(() => {
-                monster.classList.remove('hit');
-            }, 300);
-            
-            gameState.currency++;
-            updateUI();
-        }
-
-        // Выбрать персонажа
-        function selectCharacter(character) {
-            gameState.selectedCharacter = character;
-            updateUI();
-            alert(`Вы выбрали персонажа: ${getCharacterName(character)}`);
-        }
-
-        // Показать подтверждение покупки
-        function showConfirmation(item, price) {
-            gameState.currentPurchase = { item, price };
-            elements.confirmationText.textContent = `Вы уверены что хотите купить ${getItemName(item)} за ${price} Чиркашей?`;
-            elements.confirmationOverlay.classList.add('active');
-        }
-
-        // Скрыть подтверждение
         function hideConfirmation() {
             elements.confirmationOverlay.classList.remove('active');
         }
 
-        // Подтвердить покупку
-        function confirmPurchase() {
-            const { item, price } = gameState.currentPurchase;
-            if (gameState.currency >= price) {
-                gameState.currency -= price;
-                gameState.inventory.push(item);
-                updateUI();
-                alert(`Вы успешно купили ${getItemName(item)}!`);
-            } else {
-                alert('Недостаточно Чиркашей!');
-            }
-            hideConfirmation();
-        }
-
-        // Получить название персонажа
         function getCharacterName(character) {
             const names = {
                 josephine: 'Жозефина',
@@ -419,7 +468,6 @@
             return names[character] || character;
         }
 
-        // Получить название предмета
         function getItemName(item) {
             const names = {
                 potion: 'Зелье силы',
@@ -430,14 +478,21 @@
             return names[item] || item;
         }
 
-        // Обновить интерфейс
         function updateUI() {
             elements.currency.textContent = gameState.currency;
         }
 
         // Инициализация
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadGame();
             updateUI();
+            
+            // Добавляем кнопку закрытия в Telegram
+            if (tg) {
+                tg.MainButton.setText('Закрыть')
+                    .onClick(() => tg.close())
+                    .show();
+            }
         });
     </script>
 </body>
