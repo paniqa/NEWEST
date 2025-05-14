@@ -3,702 +3,862 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Чиркаши Игра</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>Королева Ада</title>
     <style>
         :root {
-            --primary-color: #333333;
-            --secondary-color: #555555;
-            --background-color: #f0f0f0;
-            --card-color: #ffffff;
-            --selected-color: #4CAF50;
-            --locked-color: #e0e0e0;
+            --primary: #ff4d6d;
+            --secondary: #ff8fa3;
+            --dark: #2b2d42;
+            --light: #fff0f3;
+            --accent: #c9184a;
+            --premium: #ffd166;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 10px;
-            background-color: var(--background-color);
-            color: #333;
+            background-color: var(--dark);
+            color: var(--light);
+            overflow-x: hidden;
         }
         
-        .header {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        .container {
+            max-width: 100%;
+            padding: 10px;
         }
         
         .tabs {
             display: flex;
             margin-bottom: 15px;
-            overflow-x: auto;
-            scrollbar-width: none;
-        }
-        
-        .tabs::-webkit-scrollbar {
-            display: none;
+            border-bottom: 2px solid var(--accent);
         }
         
         .tab {
-            padding: 12px 20px;
-            background-color: #e0e0e0;
-            margin-right: 8px;
-            border-radius: 8px 8px 0 0;
+            padding: 10px 15px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            white-space: nowrap;
-            font-weight: 500;
+            background-color: var(--dark);
+            color: var(--light);
+            border: none;
+            font-weight: bold;
+            transition: all 0.3s;
+            position: relative;
         }
         
         .tab.active {
-            background-color: var(--primary-color);
+            background-color: var(--accent);
             color: white;
-            transform: translateY(-2px);
-        }
-        
-        .tab:hover {
-            background-color: #d0d0d0;
+            border-radius: 5px 5px 0 0;
         }
         
         .tab-content {
             display: none;
-            background-color: var(--card-color);
-            padding: 20px;
-            border-radius: 0 10px 10px 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            animation: fadeIn 0.5s ease;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            animation: fadeIn 0.5s;
         }
         
         .tab-content.active {
             display: block;
         }
         
-        .monster-container {
-            text-align: center;
-            margin: 25px 0;
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         
-        .monster {
-            width: 180px;
-            height: 180px;
-            margin: 0 auto;
-            background-image: url('https://characterai.io/i/200/static/avatars/uploaded/2023/2/3/hWOg0n8UV8vX6DeFPP2lB9hWr5VQqrcQP7aRs-6-zR8.webp');
-            background-size: cover;
+        /* Босс вкладка */
+        .boss-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .boss-image {
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
             border-radius: 50%;
+            border: 5px solid var(--accent);
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .boss-image:hover {
+            transform: scale(1.05);
+        }
+        
+        .boss-image:active {
+            transform: scale(0.95);
+        }
+        
+        .tap-button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-weight: bold;
+            box-shadow: 0 5px 0 var(--accent);
+            transition: all 0.1s;
+        }
+        
+        .tap-button:active {
+            transform: translateY(5px);
+            box-shadow: 0 0 0 var(--accent);
+        }
+        
+        .damage-animation {
+            position: absolute;
+            color: red;
+            font-size: 24px;
+            font-weight: bold;
+            animation: floatUp 1s forwards;
+            pointer-events: none;
+        }
+        
+        @keyframes floatUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-100px); opacity: 0; }
+        }
+        
+        /* Персонажи вкладка */
+        .characters-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .character {
+            display: flex;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
             cursor: pointer;
             transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            position: relative;
-            overflow: hidden;
         }
         
-        .monster::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.1);
+        .character:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .character.active {
+            border: 2px solid var(--primary);
+            background-color: rgba(255, 77, 109, 0.2);
+        }
+        
+        .character-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
             border-radius: 50%;
-            opacity: 0;
-            transition: opacity 0.3s;
+            margin-right: 15px;
         }
         
-        .monster:hover::after {
-            opacity: 1;
+        .character-info {
+            flex-grow: 1;
         }
         
-        .monster.hit {
-            animation: hitAnimation 0.3s;
+        .character-name {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 5px;
         }
         
-        @keyframes hitAnimation {
-            0% { transform: scale(1); }
-            50% { transform: scale(0.9); filter: brightness(1.5) hue-rotate(-30deg); }
-            100% { transform: scale(1); }
+        /* Магазин вкладка */
+        .shop-categories {
+            display: flex;
+            margin-bottom: 15px;
         }
         
-        .cards-container {
+        .shop-category {
+            padding: 10px 15px;
+            cursor: pointer;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+            border: none;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin-right: 5px;
+            border-radius: 5px;
+        }
+        
+        .shop-category.active {
+            background-color: var(--primary);
+        }
+        
+        .shop-items {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 15px;
-            margin-top: 20px;
         }
         
-        .card {
-            background-color: var(--card-color);
+        .shop-item {
+            background-color: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-            cursor: pointer;
+            padding: 15px;
+            text-align: center;
             position: relative;
+            transition: all 0.3s;
         }
         
-        .card:hover {
+        .shop-item:hover {
             transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
         
-        .card.selected {
-            box-shadow: 0 0 0 3px var(--selected-color);
-        }
-        
-        .card.locked {
-            background-color: var(--locked-color);
-            cursor: not-allowed;
-        }
-        
-        .card.locked:hover {
-            transform: none;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-        }
-        
-        .card-image {
-            width: 100%;
-            height: 120px;
+        .item-image {
+            width: 80px;
+            height: 80px;
             object-fit: cover;
-        }
-        
-        .card-title {
-            padding: 12px;
-            text-align: center;
-            font-weight: 500;
-        }
-        
-        .card-description {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: rgba(51, 51, 51, 0.9);
-            color: white;
-            padding: 10px;
-            transform: translateY(100%);
-            transition: transform 0.3s ease;
-            font-size: 14px;
-        }
-        
-        .card:hover .card-description {
-            transform: translateY(0);
-        }
-        
-        .confirmation-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0,0,0,0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-        
-        .confirmation-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        .confirmation-box {
-            background-color: white;
-            padding: 25px;
             border-radius: 10px;
-            width: 80%;
-            max-width: 300px;
-            text-align: center;
-            transform: scale(0.9);
-            transition: transform 0.3s ease;
+            margin-bottom: 10px;
         }
         
-        .confirmation-overlay.active .confirmation-box {
-            transform: scale(1);
+        .item-name {
+            font-weight: bold;
+            margin-bottom: 5px;
         }
         
-        .confirmation-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 20px;
+        .item-price {
+            color: var(--premium);
+            font-weight: bold;
         }
         
-        .confirmation-btn {
-            padding: 8px 20px;
+        .buy-button {
+            background-color: var(--primary);
+            color: white;
             border: none;
+            padding: 5px 10px;
             border-radius: 5px;
+            margin-top: 10px;
             cursor: pointer;
-            font-weight: 500;
+            font-weight: bold;
             transition: all 0.2s;
         }
         
-        .confirmation-btn.yes {
-            background-color: var(--primary-color);
-            color: white;
+        .buy-button:disabled {
+            background-color: gray;
+            cursor: not-allowed;
         }
         
-        .confirmation-btn.no {
-            background-color: #e0e0e0;
+        .buy-button:active:not(:disabled) {
+            transform: scale(0.95);
         }
         
-        .confirmation-btn:hover {
-            opacity: 0.9;
-            transform: translateY(-2px);
+        /* Настройки вкладка */
+        .settings-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
         
-        .inventory-display {
-            margin-top: 20px;
+        .stats-card {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
             padding: 15px;
-            background-color: #f5f5f5;
-            border-radius: 8px;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 10px;
         }
         
-        .inventory-item {
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+        }
+        
+        .premium-card {
+            background: linear-gradient(135deg, var(--premium), #f8961e);
+            color: var(--dark);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .premium-title {
+            font-weight: bold;
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .premium-button {
+            background-color: var(--dark);
+            color: var(--premium);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+        
+        .premium-button:hover {
+            transform: scale(1.05);
+        }
+        
+        .premium-button:active {
+            transform: scale(0.95);
+        }
+        
+        .premium-timer {
+            font-weight: bold;
+            margin-top: 10px;
+            font-size: 18px;
+        }
+        
+        /* Информационная иконка */
+        .info-icon {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 20px;
+            height: 20px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50%;
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
+            font-weight: bold;
+            cursor: help;
+            font-size: 14px;
         }
         
-        .inventory-count {
-            font-weight: bold;
-            color: var(--primary-color);
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
         }
         
-        .character-price {
-            color: var(--primary-color);
-            font-weight: bold;
-            margin-top: 5px;
+        .modal-content {
+            background-color: var(--dark);
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 80%;
+            max-height: 80%;
+            overflow-y: auto;
+            border: 2px solid var(--primary);
         }
         
-        .character-unlocked {
-            color: var(--selected-color);
+        .modal-title {
             font-weight: bold;
-            margin-top: 5px;
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+        
+        .close-modal {
+            float: right;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 20px;
+        }
+        
+        /* Анимация получения гема */
+        .gem-animation {
+            position: absolute;
+            color: var(--premium);
+            font-size: 20px;
+            font-weight: bold;
+            animation: floatUpGem 1s forwards;
+            pointer-events: none;
+        }
+        
+        @keyframes floatUpGem {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-80px) scale(1.5); opacity: 0; }
+        }
+        
+        /* Уровень откровенности */
+        .explicitness-level {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+        
+        .level-bar {
+            flex-grow: 1;
+            height: 10px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            margin: 0 10px;
+            overflow: hidden;
+        }
+        
+        .level-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff758c, #ff7eb3);
+            width: 20%;
+            transition: width 0.5s;
+        }
+        
+        .level-text {
+            font-weight: bold;
+            min-width: 30px;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div>Чиркаши: <span id="currency">0</span></div>
-    </div>
-
-    <div class="tabs">
-        <div class="tab active" onclick="showTab('battle')">Сражение</div>
-        <div class="tab" onclick="showTab('character')">Персонаж</div>
-        <div class="tab" onclick="showTab('items')">Предметы</div>
-        <div class="tab" onclick="showTab('premium')">Премиум</div>
-    </div>
-
-    <div id="battle" class="tab-content active">
-        <h2>Сражение</h2>
-        <p>Кликните на монстра, чтобы заработать Чиркаши</p>
-        <div class="monster-container">
-            <div class="monster" id="monster" onclick="earnCurrency()"></div>
+    <div class="container">
+        <div class="tabs">
+            <button class="tab active" onclick="openTab('boss')">Королева</button>
+            <button class="tab" onclick="openTab('characters')">Персонажи</button>
+            <button class="tab" onclick="openTab('shop')">Товары</button>
+            <button class="tab" onclick="openTab('settings')">Настройки</button>
         </div>
         
-        <div class="inventory-display" id="inventoryDisplay">
-            <div class="inventory-item">
-                <span>Зелья силы:</span>
-                <span class="inventory-count" id="potionCount">0</span>
+        <!-- Вкладка с боссом -->
+        <div id="boss" class="tab-content active">
+            <div class="boss-container">
+                <img src="https://i.imgur.com/JQlE5gP.png" alt="Королева Ада" class="boss-image" id="boss-image">
+                <button class="tap-button" id="tap-button">Атаковать!</button>
             </div>
-            <div class="inventory-item">
-                <span>Каловые мечи:</span>
-                <span class="inventory-count" id="swordCount">0</span>
+        </div>
+        
+        <!-- Вкладка с персонажами -->
+        <div id="characters" class="tab-content">
+            <div class="characters-container">
+                <div class="character active" onclick="selectCharacter('alice')">
+                    <img src="https://i.imgur.com/WL3UY3a.png" alt="Алиса" class="character-image">
+                    <div class="character-info">
+                        <div class="character-name">Алиса</div>
+                        <div>Стандартный персонаж</div>
+                    </div>
+                    <div class="info-icon" onclick="showInfo('Алиса', 'Стандартный персонаж без особых способностей. Хороша для начала игры.'); event.stopPropagation();">!</div>
+                </div>
+                
+                <div class="character" onclick="selectCharacter('madina')">
+                    <img src="https://i.imgur.com/5XZwz7p.png" alt="Мадина" class="character-image">
+                    <div class="character-info">
+                        <div class="character-name">Мадина</div>
+                        <div>+10% к урону</div>
+                    </div>
+                    <div class="info-icon" onclick="showInfo('Мадина', 'Этот персонаж дает бонус +10% к урону по Королеве Ада.'); event.stopPropagation();">!</div>
+                </div>
+                
+                <div class="character" onclick="selectCharacter('zulfiya')">
+                    <img src="https://i.imgur.com/9GkLx6S.png" alt="Зульфия" class="character-image">
+                    <div class="character-info">
+                        <div class="character-name">Зульфия</div>
+                        <div>+20% к доходу</div>
+                    </div>
+                    <div class="info-icon" onclick="showInfo('Зульфия', 'Этот персонаж дает бонус +20% к получаемым гемам.'); event.stopPropagation();">!</div>
+                </div>
             </div>
-            <div class="inventory-item">
-                <span>Носки невидимости:</span>
-                <span class="inventory-count" id="sockCount">0</span>
+        </div>
+        
+        <!-- Вкладка с магазином -->
+        <div id="shop" class="tab-content">
+            <div class="shop-categories">
+                <button class="shop-category active" onclick="openShopCategory('clothes')">Одежда</button>
+                <button class="shop-category" onclick="openShopCategory('items')">Предметы</button>
             </div>
-            <div class="inventory-item">
-                <span>Премиум подписки:</span>
-                <span class="inventory-count" id="premiumCount">0</span>
+            
+            <div id="clothes" class="shop-category-content active">
+                <div class="shop-items">
+                    <div class="shop-item">
+                        <img src="https://i.imgur.com/KYjJQ2W.png" alt="Одеяние совращения" class="item-image">
+                        <div class="item-name">Одеяние совращения</div>
+                        <div class="item-price">15 гемов</div>
+                        <button class="buy-button" onclick="buyItem('seduction_robe', 15)">Купить</button>
+                        <div class="info-icon" onclick="showInfo('Одеяние совращения', 'Сексуальное одеяние, которое увеличивает вашу привлекательность.')">!</div>
+                    </div>
+                    
+                    <div class="shop-item">
+                        <img src="https://i.imgur.com/3mZQx8T.png" alt="Ушки кошко-девочки" class="item-image">
+                        <div class="item-name">Ушки кошко-девочки</div>
+                        <div class="item-price">25 гемов</div>
+                        <button class="buy-button" onclick="buyItem('cat_ears', 25)">Купить</button>
+                        <div class="info-icon" onclick="showInfo('Ушки кошко-девочки', 'Милые ушки, которые делают вас неотразимой.')">!</div>
+                    </div>
+                    
+                    <div class="shop-item">
+                        <img src="https://i.imgur.com/JzLQq9G.png" alt="Латексная броня" class="item-image">
+                        <div class="item-name">Латексная броня</div>
+                        <div class="item-price">35 гемов</div>
+                        <button class="buy-button" onclick="buyItem('latex_armor', 35)">Купить</button>
+                        <div class="info-icon" onclick="showInfo('Латексная броня', 'Стильная и функциональная броня для настоящих воительниц.')">!</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="items" class="shop-category-content">
+                <div class="shop-items">
+                    <div class="shop-item">
+                        <img src="https://i.imgur.com/Lp3yJXq.png" alt="Вино" class="item-image">
+                        <div class="item-name">Вино</div>
+                        <div class="item-price">5 гемов</div>
+                        <button class="buy-button" onclick="buyItem('wine', 5)">Купить</button>
+                        <div class="info-icon" onclick="showInfo('Вино', 'Повышает уровень откровенности на +1.')">!</div>
+                    </div>
+                    
+                    <div class="shop-item">
+                        <img src="https://i.imgur.com/8Q6Xg9P.png" alt="Гипнотический шар" class="item-image">
+                        <div class="item-name">Гипнотический шар</div>
+                        <div class="item-price">20 гемов</div>
+                        <button class="buy-button" onclick="buyItem('hypno_ball', 20)">Купить</button>
+                        <div class="info-icon" onclick="showInfo('Гипнотический шар', 'Открывает максимальный уровень откровенности (5 уровень).')">!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Вкладка с настройками -->
+        <div id="settings" class="tab-content">
+            <div class="settings-container">
+                <div class="stats-card">
+                    <div class="stat">
+                        <span>Гемы:</span>
+                        <span class="stat-value" id="gems-count">0</span>
+                    </div>
+                    <div class="stat">
+                        <span>Уровень откровенности:</span>
+                        <div class="explicitness-level">
+                            <span class="level-text" id="explicitness-level">1</span>
+                            <div class="level-bar">
+                                <div class="level-fill" id="level-fill" style="width: 20%"></div>
+                            </div>
+                            <span class="level-text">5</span>
+                        </div>
+                    </div>
+                    <div class="stat">
+                        <span>Урон:</span>
+                        <span class="stat-value" id="damage-stat">100%</span>
+                    </div>
+                    <div class="stat">
+                        <span>Доход:</span>
+                        <span class="stat-value" id="income-stat">100%</span>
+                    </div>
+                </div>
+                
+                <div class="premium-card">
+                    <div class="premium-title">ПРЕМИУМ</div>
+                    <p>Получите +50% к урону и доходу на 60 секунд!</p>
+                    <button class="premium-button" id="premium-button" onclick="buyPremium()">Купить за 30 гемов</button>
+                    <div class="premium-timer" id="premium-timer"></div>
+                </div>
             </div>
         </div>
     </div>
-
-    <div id="character" class="tab-content">
-        <h2>Персонажи</h2>
-        <div class="cards-container">
-            <div class="card" id="josephineCard" onclick="selectCharacter('josephine')">
-                <img src="https://i.imgur.com/pXWzE3k.png" class="card-image" alt="Жозефина" onerror="this.src='https://via.placeholder.com/150/333333/FFFFFF?text=Ж'">
-                <div class="card-title">Жозефина</div>
-                <div class="character-unlocked">Доступен</div>
-                <div class="card-description">Текущий выбранный персонаж</div>
-            </div>
-            <div class="card locked" id="aliceCard" onclick="unlockCharacter('alice', 350)">
-                <img src="https://i.imgur.com/QZqYV9d.png" class="card-image" alt="Алиса" onerror="this.src='https://via.placeholder.com/150/333333/FFFFFF?text=А'">
-                <div class="card-title">Алиса</div>
-                <div class="character-price">Цена: 350 Чиркашей</div>
-                <div class="card-description">Купите этого персонажа</div>
-            </div>
-            <div class="card locked" id="vasilisaCard" onclick="unlockCharacter('vasilisa', 500)">
-                <img src="https://i.imgur.com/7n8W6cL.png" class="card-image" alt="Василиса" onerror="this.src='https://via.placeholder.com/150/333333/FFFFFF?text=В'">
-                <div class="card-title">Василиса</div>
-                <div class="character-price">Цена: 500 Чиркашей</div>
-                <div class="card-description">Купите этого персонажа</div>
-            </div>
+    
+    <!-- Модальное окно с информацией -->
+    <div class="modal" id="info-modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <div class="modal-title" id="modal-title">Информация</div>
+            <div id="modal-text">Текст информации</div>
         </div>
     </div>
-
-    <div id="items" class="tab-content">
-        <h2>Магазин</h2>
-        <div class="cards-container">
-            <div class="card" onclick="showConfirmation('potion', 50)">
-                <img src="https://i.imgur.com/LpYtQ3W.png" class="card-image" alt="Зелье силы" onerror="this.src='https://via.placeholder.com/150/333333/FFFFFF?text=Зелье'">
-                <div class="card-title">Зелье силы</div>
-                <div class="card-description">Этот товар можно приобрести за 50 Чиркашей</div>
-            </div>
-            <div class="card" onclick="showConfirmation('sword', 100)">
-                <img src="https://i.imgur.com/9zKm3tP.png" class="card-image" alt="Каловой меч" onerror="this.src='https://via.placeholder.com/150/333333/FFFFFF?text=Меч'">
-                <div class="card-title">Каловой меч</div>
-                <div class="card-description">Этот товар можно приобрести за 100 Чиркашей</div>
-            </div>
-            <div class="card" onclick="showConfirmation('sock', 150)">
-                <img src="https://i.imgur.com/vVk8VYr.png" class="card-image" alt="Носок невидимости" onerror="this.src='https://via.placeholder.com/150/333333/FFFFFF?text=Носок'">
-                <div class="card-title">Носок невидимости</div>
-                <div class="card-description">Этот товар можно приобрести за 150 Чиркашей</div>
-            </div>
-        </div>
-    </div>
-
-    <div id="premium" class="tab-content">
-        <h2>Премиум</h2>
-        <div class="cards-container">
-            <div class="card" onclick="showConfirmation('premium', 250)">
-                <img src="https://i.imgur.com/mR9WwXg.png" class="card-image" alt="Премиум подписка" onerror="this.src='https://via.placeholder.com/150/333333/FFFFFF?text=Премиум'">
-                <div class="card-title">Премиум подписка</div>
-                <div class="card-description">Активируйте премиум на 1 месяц за 250 Чиркашей</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="confirmation-overlay" id="confirmationOverlay">
-        <div class="confirmation-box">
-            <h3 id="confirmationText">Вы уверены что хотите купить этот товар за 100 Чиркашей?</h3>
-            <div class="confirmation-buttons">
-                <button class="confirmation-btn yes" onclick="confirmPurchase()">Да</button>
-                <button class="confirmation-btn no" onclick="hideConfirmation()">Нет</button>
-            </div>
-        </div>
-    </div>
-
+    
     <script>
-        // Инициализация Telegram WebApp
-        const tg = window.Telegram?.WebApp;
-        if (tg) {
-            tg.ready();
-            tg.expand();
-            
-            // Добавляем кнопку закрытия
-            tg.MainButton.setText('Закрыть')
-                .onClick(() => tg.close())
-                .show();
-        }
-
-        // Состояние игры
-        const gameState = {
-            currency: 0,
-            selectedCharacter: 'josephine',
-            inventory: {
-                potion: 0,
-                sword: 0,
-                sock: 0,
-                premium: 0
-            },
-            unlockedCharacters: {
-                josephine: true,
-                alice: false,
-                vasilisa: false
-            },
-            currentPurchase: null
-        };
-
-        // Цены персонажей
-        const CHARACTER_PRICES = {
-            alice: 350,
-            vasilisa: 500
-        };
-
-        // Элементы интерфейса
-        const elements = {
-            currency: document.getElementById('currency'),
-            monster: document.getElementById('monster'),
-            confirmationOverlay: document.getElementById('confirmationOverlay'),
-            confirmationText: document.getElementById('confirmationText'),
-            potionCount: document.getElementById('potionCount'),
-            swordCount: document.getElementById('swordCount'),
-            sockCount: document.getElementById('sockCount'),
-            premiumCount: document.getElementById('premiumCount'),
-            josephineCard: document.getElementById('josephineCard'),
-            aliceCard: document.getElementById('aliceCard'),
-            vasilisaCard: document.getElementById('vasilisaCard')
-        };
-
-        // Улучшенная система сохранения
-        const STORAGE_KEY = 'chirkashi_save_characters';
+        // Игровые переменные
+        let gems = 0;
+        let selectedCharacter = 'alice';
+        let damageMultiplier = 1.0;
+        let incomeMultiplier = 1.0;
+        let premiumActive = false;
+        let premiumTimeLeft = 0;
+        let explicitnessLevel = 1;
+        let ownedItems = [];
+        let premiumInterval;
         
-        async function saveGame() {
-            const saveData = {
-                version: 4,
-                currency: gameState.currency,
-                inventory: gameState.inventory,
-                selectedCharacter: gameState.selectedCharacter,
-                unlockedCharacters: gameState.unlockedCharacters,
-                timestamp: Date.now()
-            };
-            
-            try {
-                // Сохраняем в Telegram Cloud Storage
-                if (tg?.CloudStorage?.setItem) {
-                    await tg.CloudStorage.setItem(STORAGE_KEY, JSON.stringify(saveData));
-                    console.log('Данные сохранены в Telegram Cloud');
-                }
-                
-                // Всегда сохраняем в localStorage как резерв
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(saveData));
-            } catch (error) {
-                console.error('Ошибка сохранения:', error);
-            }
+        // DOM элементы
+        const bossImage = document.getElementById('boss-image');
+        const tapButton = document.getElementById('tap-button');
+        const gemsCountElement = document.getElementById('gems-count');
+        const damageStatElement = document.getElementById('damage-stat');
+        const incomeStatElement = document.getElementById('income-stat');
+        const premiumTimerElement = document.getElementById('premium-timer');
+        const premiumButton = document.getElementById('premium-button');
+        const explicitnessLevelElement = document.getElementById('explicitness-level');
+        const levelFillElement = document.getElementById('level-fill');
+        
+        // Инициализация игры
+        function initGame() {
+            updateStats();
+            loadGame();
+            startPremiumTimer();
         }
-
-        async function loadGame() {
-            try {
-                let loadedData = null;
-                
-                // Пробуем загрузить из Telegram Cloud
-                if (tg?.CloudStorage?.getItem) {
-                    try {
-                        const cloudData = await tg.CloudStorage.getItem(STORAGE_KEY);
-                        if (cloudData) loadedData = JSON.parse(cloudData);
-                    } catch (e) {
-                        console.log('Ошибка загрузки из Cloud Storage:', e);
-                    }
-                }
-                
-                // Если в Cloud нет данных, пробуем localStorage
-                if (!loadedData) {
-                    const localData = localStorage.getItem(STORAGE_KEY);
-                    if (localData) loadedData = JSON.parse(localData);
-                }
-                
-                // Восстанавливаем состояние
-                if (loadedData) {
-                    gameState.currency = loadedData.currency || 0;
-                    gameState.selectedCharacter = loadedData.selectedCharacter || 'josephine';
-                    
-                    // Инвентарь
-                    if (loadedData.inventory) {
-                        gameState.inventory.potion = loadedData.inventory.potion || 0;
-                        gameState.inventory.sword = loadedData.inventory.sword || 0;
-                        gameState.inventory.sock = loadedData.inventory.sock || 0;
-                        gameState.inventory.premium = loadedData.inventory.premium || 0;
-                    }
-                    
-                    // Открытые персонажи
-                    if (loadedData.unlockedCharacters) {
-                        gameState.unlockedCharacters = {
-                            josephine: true, // Всегда открыт
-                            alice: loadedData.unlockedCharacters.alice || false,
-                            vasilisa: loadedData.unlockedCharacters.vasilisa || false
-                        };
-                    }
-                    
-                    updateUI();
-                    updateCharacterCards();
-                    console.log('Игра загружена:', loadedData);
-                }
-            } catch (error) {
-                console.error('Ошибка загрузки:', error);
-            }
-        }
-
-        // Обновление интерфейса
-        function updateUI() {
-            elements.currency.textContent = gameState.currency;
-            elements.potionCount.textContent = gameState.inventory.potion;
-            elements.swordCount.textContent = gameState.inventory.sword;
-            elements.sockCount.textContent = gameState.inventory.sock;
-            elements.premiumCount.textContent = gameState.inventory.premium;
-        }
-
-        // Обновление карточек персонажей
-        function updateCharacterCards() {
-            // Жозефина всегда доступна
-            if (gameState.selectedCharacter === 'josephine') {
-                elements.josephineCard.classList.add('selected');
-            } else {
-                elements.josephineCard.classList.remove('selected');
+        
+        // Открытие вкладки
+        function openTab(tabName) {
+            const tabs = document.getElementsByClassName('tab');
+            for (let i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove('active');
             }
             
-            // Алиса
-            if (gameState.unlockedCharacters.alice) {
-                elements.aliceCard.classList.remove('locked');
-                elements.aliceCard.onclick = () => selectCharacter('alice');
-                elements.aliceCard.querySelector('.character-price').textContent = 'Открыто';
-                elements.aliceCard.querySelector('.character-price').className = 'character-unlocked';
-                
-                if (gameState.selectedCharacter === 'alice') {
-                    elements.aliceCard.classList.add('selected');
-                } else {
-                    elements.aliceCard.classList.remove('selected');
-                }
-            } else {
-                elements.aliceCard.classList.add('locked');
-                elements.aliceCard.onclick = () => unlockCharacter('alice', 350);
-                elements.aliceCard.querySelector('.character-price').textContent = 'Цена: 350 Чиркашей';
-                elements.aliceCard.querySelector('.character-price').className = 'character-price';
-                elements.aliceCard.classList.remove('selected');
+            const tabContents = document.getElementsByClassName('tab-content');
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove('active');
             }
             
-            // Василиса
-            if (gameState.unlockedCharacters.vasilisa) {
-                elements.vasilisaCard.classList.remove('locked');
-                elements.vasilisaCard.onclick = () => selectCharacter('vasilisa');
-                elements.vasilisaCard.querySelector('.character-price').textContent = 'Открыто';
-                elements.vasilisaCard.querySelector('.character-price').className = 'character-unlocked';
-                
-                if (gameState.selectedCharacter === 'vasilisa') {
-                    elements.vasilisaCard.classList.add('selected');
-                } else {
-                    elements.vasilisaCard.classList.remove('selected');
-                }
-            } else {
-                elements.vasilisaCard.classList.add('locked');
-                elements.vasilisaCard.onclick = () => unlockCharacter('vasilisa', 500);
-                elements.vasilisaCard.querySelector('.character-price').textContent = 'Цена: 500 Чиркашей';
-                elements.vasilisaCard.querySelector('.character-price').className = 'character-price';
-                elements.vasilisaCard.classList.remove('selected');
-            }
+            document.querySelector(`.tab[onclick="openTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(tabName).classList.add('active');
         }
-
-        // Разблокировка персонажа
-        function unlockCharacter(character, price) {
-            if (gameState.currency >= price) {
-                gameState.currency -= price;
-                gameState.unlockedCharacters[character] = true;
-                updateUI();
-                updateCharacterCards();
-                saveGame();
-                showAlert(`Вы разблокировали персонажа: ${getCharacterName(character)}! Теперь вы можете выбрать его.`);
-            } else {
-                showAlert(`Недостаточно Чиркашей! Нужно ещё ${price - gameState.currency} для разблокировки.`);
-            }
+        
+        // Открытие категории в магазине
+        function openShopCategory(categoryName) {
+            const categories = document.querySelectorAll('.shop-category');
+            categories.forEach(cat => cat.classList.remove('active'));
+            
+            const categoryContents = document.querySelectorAll('.shop-category-content');
+            categoryContents.forEach(content => content.classList.remove('active'));
+            
+            document.querySelector(`.shop-category[onclick="openShopCategory('${categoryName}')"]`).classList.add('active');
+            document.getElementById(categoryName).classList.add('active');
         }
-
+        
         // Выбор персонажа
         function selectCharacter(character) {
-            gameState.selectedCharacter = character;
-            updateCharacterCards();
+            const characters = document.querySelectorAll('.character');
+            characters.forEach(char => char.classList.remove('active'));
+            
+            document.querySelector(`.character[onclick="selectCharacter('${character}')"]`).classList.add('active');
+            selectedCharacter = character;
+            
+            // Обновляем множители в зависимости от персонажа
+            switch(character) {
+                case 'alice':
+                    damageMultiplier = 1.0;
+                    incomeMultiplier = 1.0;
+                    break;
+                case 'madina':
+                    damageMultiplier = 1.1;
+                    incomeMultiplier = 1.0;
+                    break;
+                case 'zulfiya':
+                    damageMultiplier = 1.0;
+                    incomeMultiplier = 1.2;
+                    break;
+            }
+            
+            // Применяем премиум бонус если активен
+            if (premiumActive) {
+                damageMultiplier *= 1.5;
+                incomeMultiplier *= 1.5;
+            }
+            
+            updateStats();
             saveGame();
-            showAlert(`Вы выбрали персонажа: ${getCharacterName(character)}`);
         }
-
-        // Игровые функции
-        function earnCurrency() {
-            const monster = elements.monster;
-            monster.classList.add('hit');
-            setTimeout(() => monster.classList.remove('hit'), 300);
+        
+        // Атака босса
+        tapButton.addEventListener('click', function() {
+            // Анимация урона
+            const damage = document.createElement('div');
+            damage.className = 'damage-animation';
+            damage.textContent = 'Урон!';
+            damage.style.left = `${Math.random() * 100}%`;
+            bossImage.parentNode.appendChild(damage);
             
-            gameState.currency++;
-            updateUI();
+            // Анимация изображения босса
+            bossImage.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                bossImage.style.transform = 'scale(1)';
+            }, 100);
+            
+            // Получение гемов
+            let gemsEarned = 1 * incomeMultiplier;
+            gems += gemsEarned;
+            
+            // Анимация получения гемов
+            const gem = document.createElement('div');
+            gem.className = 'gem-animation';
+            gem.textContent = `+${Math.round(gemsEarned)} гем`;
+            gem.style.left = `${Math.random() * 100}%`;
+            bossImage.parentNode.appendChild(gem);
+            
+            updateStats();
             saveGame();
-        }
-
-        function showConfirmation(item, price) {
-            gameState.currentPurchase = { item, price };
-            elements.confirmationText.textContent = `Вы уверены что хотите купить ${getItemName(item)} за ${price} Чиркашей?`;
-            elements.confirmationOverlay.classList.add('active');
-        }
-
-        function hideConfirmation() {
-            elements.confirmationOverlay.classList.remove('active');
-        }
-
-        function confirmPurchase() {
-            const { item, price } = gameState.currentPurchase;
-            if (gameState.currency >= price) {
-                gameState.currency -= price;
-                gameState.inventory[item]++;
-                updateUI();
-                showAlert(`Вы успешно купили ${getItemName(item)}!`);
-                saveGame();
-            } else {
-                showAlert('Недостаточно Чиркашей!');
-            }
-            hideConfirmation();
-        }
-
-        function showTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            document.getElementById(tabId).classList.add('active');
-            document.querySelector(`.tab[onclick="showTab('${tabId}')"]`).classList.add('active');
-        }
-
-        function getCharacterName(character) {
-            const names = {
-                josephine: 'Жозефина',
-                alice: 'Алиса',
-                vasilisa: 'Василиса'
-            };
-            return names[character] || character;
-        }
-
-        function getItemName(item) {
-            const names = {
-                potion: 'Зелье силы',
-                sword: 'Каловой меч',
-                sock: 'Носок невидимости',
-                premium: 'Премиум подписку'
-            };
-            return names[item] || item;
-        }
-
-        function showAlert(message) {
-            if (tg?.showAlert) {
-                tg.showAlert(message);
-            } else {
-                alert(message);
-            }
-        }
-
-        // Инициализация игры
-        document.addEventListener('DOMContentLoaded', async () => {
-            await loadGame();
-            updateUI();
-            updateCharacterCards();
-            
-            // Сохраняем при закрытии
-            if (tg) {
-                tg.onEvent('viewportChanged', (e) => {
-                    if (e.isStateStable) saveGame();
-                });
-            }
         });
+        
+        // Покупка предмета
+        function buyItem(itemId, price) {
+            if (gems < price) {
+                alert('Недостаточно гемов!');
+                return;
+            }
+            
+            gems -= price;
+            
+            // Обработка эффектов предметов
+            switch(itemId) {
+                case 'wine':
+                    if (explicitnessLevel < 5) {
+                        explicitnessLevel += 1;
+                        updateExplicitnessLevel();
+                    }
+                    break;
+                case 'hypno_ball':
+                    explicitnessLevel = 5;
+                    updateExplicitnessLevel();
+                    break;
+                default:
+                    if (!ownedItems.includes(itemId)) {
+                        ownedItems.push(itemId);
+                    }
+                    break;
+            }
+            
+            updateStats();
+            saveGame();
+            alert('Покупка совершена!');
+        }
+        
+        // Покупка премиума
+        function buyPremium() {
+            if (premiumActive) {
+                alert('Премиум уже активен!');
+                return;
+            }
+            
+            if (gems < 30) {
+                alert('Недостаточно гемов!');
+                return;
+            }
+            
+            gems -= 30;
+            premiumActive = true;
+            premiumTimeLeft = 60;
+            
+            // Обновляем множители
+            damageMultiplier *= 1.5;
+            incomeMultiplier *= 1.5;
+            
+            updateStats();
+            saveGame();
+            startPremiumTimer();
+        }
+        
+        // Таймер премиума
+        function startPremiumTimer() {
+            clearInterval(premiumInterval);
+            
+            if (premiumActive) {
+                premiumInterval = setInterval(function() {
+                    premiumTimeLeft--;
+                    premiumTimerElement.textContent = `Осталось: ${premiumTimeLeft} сек`;
+                    
+                    if (premiumTimeLeft <= 0) {
+                        clearInterval(premiumInterval);
+                        premiumActive = false;
+                        premiumTimerElement.textContent = '';
+                        
+                        // Сбрасываем множители
+                        switch(selectedCharacter) {
+                            case 'alice':
+                                damageMultiplier = 1.0;
+                                incomeMultiplier = 1.0;
+                                break;
+                            case 'madina':
+                                damageMultiplier = 1.1;
+                                incomeMultiplier = 1.0;
+                                break;
+                            case 'zulfiya':
+                                damageMultiplier = 1.0;
+                                incomeMultiplier = 1.2;
+                                break;
+                        }
+                        
+                        updateStats();
+                        saveGame();
+                    }
+                }, 1000);
+                
+                premiumTimerElement.textContent = `Осталось: ${premiumTimeLeft} сек`;
+            }
+        }
+        
+        // Обновление уровня откровенности
+        function updateExplicitnessLevel() {
+            explicitnessLevelElement.textContent = explicitnessLevel;
+            levelFillElement.style.width = `${(explicitnessLevel / 5) * 100}%`;
+        }
+        
+        // Обновление статистики
+        function updateStats() {
+            gemsCountElement.textContent = gems;
+            damageStatElement.textContent = `${Math.round(damageMultiplier * 100)}%`;
+            incomeStatElement.textContent = `${Math.round(incomeMultiplier * 100)}%`;
+            
+            // Блокируем кнопку покупки премиума если не хватает денег или уже активен
+            premiumButton.disabled = gems < 30 || premiumActive;
+        }
+        
+        // Показать информацию
+        function showInfo(title, text) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-text').textContent = text;
+            document.getElementById('info-modal').style.display = 'flex';
+        }
+        
+        // Закрыть модальное окно
+        function closeModal() {
+            document.getElementById('info-modal').style.display = 'none';
+        }
+        
+        // Сохранение игры
+        function saveGame() {
+            const gameData = {
+                gems,
+                selectedCharacter,
+                premiumActive,
+                premiumTimeLeft,
+                explicitnessLevel,
+                ownedItems,
+                damageMultiplier,
+                incomeMultiplier
+            };
+            
+            localStorage.setItem('hellQueenGame', JSON.stringify(gameData));
+        }
+        
+        // Загрузка игры
+        function loadGame() {
+            const savedData = localStorage.getItem('hellQueenGame');
+            if (savedData) {
+                const gameData = JSON.parse(savedData);
+                
+                gems = gameData.gems || 0;
+                selectedCharacter = gameData.selectedCharacter || 'alice';
+                premiumActive = gameData.premiumActive || false;
+                premiumTimeLeft = gameData.premiumTimeLeft || 0;
+                explicitnessLevel = gameData.explicitnessLevel || 1;
+                ownedItems = gameData.ownedItems || [];
+                damageMultiplier = gameData.damageMultiplier || 1.0;
+                incomeMultiplier = gameData.incomeMultiplier || 1.0;
+                
+                // Выбираем сохраненного персонажа
+                document.querySelector(`.character[onclick="selectCharacter('${selectedCharacter}')"]`).click();
+                
+                // Обновляем уровень откровенности
+                updateExplicitnessLevel();
+                
+                // Если премиум активен, запускаем таймер
+                if (premiumActive) {
+                    startPremiumTimer();
+                }
+            }
+        }
+        
+        // Инициализация игры при загрузке
+        window.onload = initGame;
     </script>
 </body>
 </html>
