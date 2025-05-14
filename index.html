@@ -336,6 +336,11 @@
         if (tg) {
             tg.ready();
             tg.expand();
+            
+            // Добавляем кнопку закрытия
+            tg.MainButton.setText('Закрыть')
+                .onClick(() => tg.close())
+                .show();
         }
 
         // Состояние игры
@@ -354,11 +359,12 @@
             confirmationText: document.getElementById('confirmationText')
         };
 
-        // Функции для работы с хранилищем
-        const STORAGE_KEY = 'chirkashi_save';
+        // Улучшенная система сохранения
+        const STORAGE_KEY = 'chirkashi_save_v3';
         
         async function saveGame() {
             const saveData = {
+                version: 3,
                 currency: gameState.currency,
                 inventory: gameState.inventory,
                 character: gameState.selectedCharacter,
@@ -366,11 +372,14 @@
             };
             
             try {
-                if (tg?.CloudStorage) {
+                // Сохраняем в Telegram Cloud Storage
+                if (tg?.CloudStorage?.setItem) {
                     await tg.CloudStorage.setItem(STORAGE_KEY, JSON.stringify(saveData));
-                } else {
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(saveData));
+                    console.log('Данные сохранены в Telegram Cloud');
                 }
+                
+                // Всегда сохраняем в localStorage как резерв
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(saveData));
             } catch (error) {
                 console.error('Ошибка сохранения:', error);
             }
@@ -378,30 +387,37 @@
 
         async function loadGame() {
             try {
-                let savedData = null;
+                let loadedData = null;
                 
-                if (tg?.CloudStorage) {
-                    const cloudData = await tg.CloudStorage.getItem(STORAGE_KEY);
-                    if (cloudData) savedData = JSON.parse(cloudData);
+                // Пробуем загрузить из Telegram Cloud
+                if (tg?.CloudStorage?.getItem) {
+                    try {
+                        const cloudData = await tg.CloudStorage.getItem(STORAGE_KEY);
+                        if (cloudData) loadedData = JSON.parse(cloudData);
+                    } catch (e) {
+                        console.log('Ошибка загрузки из Cloud Storage:', e);
+                    }
                 }
                 
-                if (!savedData) {
+                // Если в Cloud нет данных, пробуем localStorage
+                if (!loadedData) {
                     const localData = localStorage.getItem(STORAGE_KEY);
-                    if (localData) savedData = JSON.parse(localData);
+                    if (localData) loadedData = JSON.parse(localData);
                 }
                 
-                if (savedData) {
-                    gameState.currency = savedData.currency || 0;
-                    gameState.inventory = savedData.inventory || [];
-                    gameState.selectedCharacter = savedData.character || null;
-                    updateUI();
+                // Восстанавливаем состояние
+                if (loadedData) {
+                    gameState.currency = loadedData.currency || 0;
+                    gameState.inventory = loadedData.inventory || [];
+                    gameState.selectedCharacter = loadedData.character || loadedData.selectedCharacter || null;
+                    console.log('Игра загружена:', loadedData);
                 }
             } catch (error) {
                 console.error('Ошибка загрузки:', error);
             }
         }
 
-        // Игровые функции с автосохранением
+        // Игровые функции
         function earnCurrency() {
             const monster = elements.monster;
             monster.classList.add('hit');
@@ -419,6 +435,16 @@
             saveGame();
         }
 
+        function showConfirmation(item, price) {
+            gameState.currentPurchase = { item, price };
+            elements.confirmationText.textContent = `Вы уверены что хотите купить ${getItemName(item)} за ${price} Чиркашей?`;
+            elements.confirmationOverlay.classList.add('active');
+        }
+
+        function hideConfirmation() {
+            elements.confirmationOverlay.classList.remove('active');
+        }
+
         function confirmPurchase() {
             const { item, price } = gameState.currentPurchase;
             if (gameState.currency >= price) {
@@ -433,16 +459,6 @@
             hideConfirmation();
         }
 
-        // Вспомогательные функции
-        function showAlert(message) {
-            if (tg?.showAlert) {
-                tg.showAlert(message);
-            } else {
-                alert(message);
-            }
-        }
-
-        // Остальные функции из оригинального кода
         function showTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
@@ -453,10 +469,6 @@
             
             document.getElementById(tabId).classList.add('active');
             document.querySelector(`.tab[onclick="showTab('${tabId}')"]`).classList.add('active');
-        }
-
-        function hideConfirmation() {
-            elements.confirmationOverlay.classList.remove('active');
         }
 
         function getCharacterName(character) {
@@ -482,16 +494,24 @@
             elements.currency.textContent = gameState.currency;
         }
 
-        // Инициализация
+        function showAlert(message) {
+            if (tg?.showAlert) {
+                tg.showAlert(message);
+            } else {
+                alert(message);
+            }
+        }
+
+        // Инициализация игры
         document.addEventListener('DOMContentLoaded', async () => {
             await loadGame();
             updateUI();
             
-            // Добавляем кнопку закрытия в Telegram
+            // Сохраняем при закрытии
             if (tg) {
-                tg.MainButton.setText('Закрыть')
-                    .onClick(() => tg.close())
-                    .show();
+                tg.onEvent('viewportChanged', (e) => {
+                    if (e.isStateStable) saveGame();
+                });
             }
         });
     </script>
