@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Королева Ада</title>
+    <!-- Подключаем Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
         :root {
             --primary: #ff4d6d;
@@ -73,6 +76,8 @@
         .boss-container {
             text-align: center;
             margin-top: 20px;
+            position: relative;
+            overflow: hidden;
         }
         
         .boss-image {
@@ -120,6 +125,7 @@
             font-weight: bold;
             animation: floatUp 1s forwards;
             pointer-events: none;
+            z-index: 10;
         }
         
         @keyframes floatUp {
@@ -142,6 +148,7 @@
             padding: 15px;
             cursor: pointer;
             transition: all 0.3s;
+            position: relative;
         }
         
         .character:hover {
@@ -191,6 +198,15 @@
         
         .shop-category.active {
             background-color: var(--primary);
+        }
+        
+        .shop-category-content {
+            display: none;
+        }
+        
+        .shop-category-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
         }
         
         .shop-items {
@@ -318,8 +334,8 @@
         /* Информационная иконка */
         .info-icon {
             position: absolute;
-            top: 5px;
-            right: 5px;
+            top: 15px;
+            right: 15px;
             width: 20px;
             height: 20px;
             background-color: var(--primary);
@@ -331,6 +347,7 @@
             font-weight: bold;
             cursor: help;
             font-size: 14px;
+            z-index: 5;
         }
         
         .modal {
@@ -378,6 +395,7 @@
             font-weight: bold;
             animation: floatUpGem 1s forwards;
             pointer-events: none;
+            z-index: 10;
         }
         
         @keyframes floatUpGem {
@@ -412,6 +430,22 @@
             font-weight: bold;
             min-width: 30px;
         }
+        
+        /* Индикатор загрузки */
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -440,7 +474,7 @@
                         <div class="character-name">Алиса</div>
                         <div>Стандартный персонаж</div>
                     </div>
-                    <div class="info-icon" onclick="showInfo('Алиса', 'Стандартный персонаж без особых способностей. Хороша для начала игры.'); event.stopPropagation();">!</div>
+                    <div class="info-icon" onclick="showCharacterInfo('alice'); event.stopPropagation();">!</div>
                 </div>
                 
                 <div class="character" onclick="selectCharacter('madina')">
@@ -449,7 +483,7 @@
                         <div class="character-name">Мадина</div>
                         <div>+10% к урону</div>
                     </div>
-                    <div class="info-icon" onclick="showInfo('Мадина', 'Этот персонаж дает бонус +10% к урону по Королеве Ада.'); event.stopPropagation();">!</div>
+                    <div class="info-icon" onclick="showCharacterInfo('madina'); event.stopPropagation();">!</div>
                 </div>
                 
                 <div class="character" onclick="selectCharacter('zulfiya')">
@@ -458,7 +492,7 @@
                         <div class="character-name">Зульфия</div>
                         <div>+20% к доходу</div>
                     </div>
-                    <div class="info-icon" onclick="showInfo('Зульфия', 'Этот персонаж дает бонус +20% к получаемым гемам.'); event.stopPropagation();">!</div>
+                    <div class="info-icon" onclick="showCharacterInfo('zulfiya'); event.stopPropagation();">!</div>
                 </div>
             </div>
         </div>
@@ -477,7 +511,7 @@
                         <div class="item-name">Одеяние совращения</div>
                         <div class="item-price">15 гемов</div>
                         <button class="buy-button" onclick="buyItem('seduction_robe', 15)">Купить</button>
-                        <div class="info-icon" onclick="showInfo('Одеяние совращения', 'Сексуальное одеяние, которое увеличивает вашу привлекательность.')">!</div>
+                        <div class="info-icon" onclick="showItemInfo('Одеяние совращения', 'Сексуальное одеяние, которое увеличивает вашу привлекательность.')">!</div>
                     </div>
                     
                     <div class="shop-item">
@@ -485,7 +519,7 @@
                         <div class="item-name">Ушки кошко-девочки</div>
                         <div class="item-price">25 гемов</div>
                         <button class="buy-button" onclick="buyItem('cat_ears', 25)">Купить</button>
-                        <div class="info-icon" onclick="showInfo('Ушки кошко-девочки', 'Милые ушки, которые делают вас неотразимой.')">!</div>
+                        <div class="info-icon" onclick="showItemInfo('Ушки кошко-девочки', 'Милые ушки, которые делают вас неотразимой.')">!</div>
                     </div>
                     
                     <div class="shop-item">
@@ -493,7 +527,7 @@
                         <div class="item-name">Латексная броня</div>
                         <div class="item-price">35 гемов</div>
                         <button class="buy-button" onclick="buyItem('latex_armor', 35)">Купить</button>
-                        <div class="info-icon" onclick="showInfo('Латексная броня', 'Стильная и функциональная броня для настоящих воительниц.')">!</div>
+                        <div class="info-icon" onclick="showItemInfo('Латексная броня', 'Стильная и функциональная броня для настоящих воительниц.')">!</div>
                     </div>
                 </div>
             </div>
@@ -505,7 +539,7 @@
                         <div class="item-name">Вино</div>
                         <div class="item-price">5 гемов</div>
                         <button class="buy-button" onclick="buyItem('wine', 5)">Купить</button>
-                        <div class="info-icon" onclick="showInfo('Вино', 'Повышает уровень откровенности на +1.')">!</div>
+                        <div class="info-icon" onclick="showItemInfo('Вино', 'Повышает уровень откровенности на +1.')">!</div>
                     </div>
                     
                     <div class="shop-item">
@@ -513,7 +547,7 @@
                         <div class="item-name">Гипнотический шар</div>
                         <div class="item-price">20 гемов</div>
                         <button class="buy-button" onclick="buyItem('hypno_ball', 20)">Купить</button>
-                        <div class="info-icon" onclick="showInfo('Гипнотический шар', 'Открывает максимальный уровень откровенности (5 уровень).')">!</div>
+                        <div class="info-icon" onclick="showItemInfo('Гипнотический шар', 'Открывает максимальный уровень откровенности (5 уровень).')">!</div>
                     </div>
                 </div>
             </div>
@@ -553,6 +587,8 @@
                     <button class="premium-button" id="premium-button" onclick="buyPremium()">Купить за 30 гемов</button>
                     <div class="premium-timer" id="premium-timer"></div>
                 </div>
+                
+                <div id="user-id-display" style="text-align: center; margin-top: 20px;"></div>
             </div>
         </div>
     </div>
@@ -566,7 +602,30 @@
         </div>
     </div>
     
+    <!-- Индикатор загрузки -->
+    <div class="modal" id="loading-modal">
+        <div class="modal-content" style="text-align: center;">
+            <div class="loader"></div>
+            <div>Загрузка данных...</div>
+        </div>
+    </div>
+    
     <script>
+        // Инициализация Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyD5u2zQ3J5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5",
+            authDomain: "hellqueen-game.firebaseapp.com",
+            databaseURL: "https://hellqueen-game-default-rtdb.firebaseio.com",
+            projectId: "hellqueen-game",
+            storageBucket: "hellqueen-game.appspot.com",
+            messagingSenderId: "123456789012",
+            appId: "1:123456789012:web:5a5a5a5a5a5a5a5a5a5a5a"
+        };
+        
+        // Инициализируем Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        
         // Игровые переменные
         let gems = 0;
         let selectedCharacter = 'alice';
@@ -577,6 +636,8 @@
         let explicitnessLevel = 1;
         let ownedItems = [];
         let premiumInterval;
+        let userId = '';
+        let isDataLoaded = false;
         
         // DOM элементы
         const bossImage = document.getElementById('boss-image');
@@ -588,16 +649,44 @@
         const premiumButton = document.getElementById('premium-button');
         const explicitnessLevelElement = document.getElementById('explicitness-level');
         const levelFillElement = document.getElementById('level-fill');
+        const userIdDisplay = document.getElementById('user-id-display');
+        const loadingModal = document.getElementById('loading-modal');
         
         // Инициализация игры
         function initGame() {
-            updateStats();
-            loadGame();
-            startPremiumTimer();
+            showLoading();
+            
+            // Генерируем или получаем ID пользователя
+            userId = localStorage.getItem('userId');
+            if (!userId) {
+                userId = 'user_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('userId', userId);
+            }
+            
+            userIdDisplay.textContent = `ID: ${userId}`;
+            
+            // Загружаем данные пользователя
+            loadUserData();
+        }
+        
+        // Показать загрузку
+        function showLoading() {
+            loadingModal.style.display = 'flex';
+        }
+        
+        // Скрыть загрузку
+        function hideLoading() {
+            loadingModal.style.display = 'none';
         }
         
         // Открытие вкладки
         function openTab(tabName) {
+            // Очищаем анимации при переключении вкладок
+            if (tabName === 'boss') {
+                const animations = document.querySelectorAll('.damage-animation, .gem-animation');
+                animations.forEach(anim => anim.remove());
+            }
+            
             const tabs = document.getElementsByClassName('tab');
             for (let i = 0; i < tabs.length; i++) {
                 tabs[i].classList.remove('active');
@@ -655,16 +744,22 @@
             }
             
             updateStats();
-            saveGame();
+            saveUserData();
         }
         
         // Атака босса
         tapButton.addEventListener('click', function() {
+            // Ограничиваем количество анимаций
+            const existingAnimations = document.querySelectorAll('.damage-animation, .gem-animation');
+            if (existingAnimations.length > 5) {
+                existingAnimations[0].remove();
+            }
+            
             // Анимация урона
             const damage = document.createElement('div');
             damage.className = 'damage-animation';
             damage.textContent = 'Урон!';
-            damage.style.left = `${Math.random() * 100}%`;
+            damage.style.left = `${Math.random() * 70 + 15}%`;
             bossImage.parentNode.appendChild(damage);
             
             // Анимация изображения босса
@@ -673,19 +768,19 @@
                 bossImage.style.transform = 'scale(1)';
             }, 100);
             
-            // Получение гемов
-            let gemsEarned = 1 * incomeMultiplier;
+            // Получение гемов (округляем до десятых)
+            let gemsEarned = Math.round(1 * incomeMultiplier * 10) / 10;
             gems += gemsEarned;
             
             // Анимация получения гемов
             const gem = document.createElement('div');
             gem.className = 'gem-animation';
-            gem.textContent = `+${Math.round(gemsEarned)} гем`;
-            gem.style.left = `${Math.random() * 100}%`;
+            gem.textContent = `+${gemsEarned.toFixed(1)} гем`;
+            gem.style.left = `${Math.random() * 70 + 15}%`;
             bossImage.parentNode.appendChild(gem);
             
             updateStats();
-            saveGame();
+            saveUserData();
         });
         
         // Покупка предмета
@@ -703,21 +798,35 @@
                     if (explicitnessLevel < 5) {
                         explicitnessLevel += 1;
                         updateExplicitnessLevel();
+                    } else {
+                        alert('У вас уже максимальный уровень откровенности!');
+                        gems += price; // Возвращаем деньги
+                        return;
                     }
                     break;
                 case 'hypno_ball':
-                    explicitnessLevel = 5;
-                    updateExplicitnessLevel();
+                    if (explicitnessLevel < 5) {
+                        explicitnessLevel = 5;
+                        updateExplicitnessLevel();
+                    } else {
+                        alert('У вас уже максимальный уровень откровенности!');
+                        gems += price; // Возвращаем деньги
+                        return;
+                    }
                     break;
                 default:
                     if (!ownedItems.includes(itemId)) {
                         ownedItems.push(itemId);
+                    } else {
+                        alert('Этот предмет уже куплен!');
+                        gems += price; // Возвращаем деньги
+                        return;
                     }
                     break;
             }
             
             updateStats();
-            saveGame();
+            saveUserData();
             alert('Покупка совершена!');
         }
         
@@ -742,7 +851,7 @@
             incomeMultiplier *= 1.5;
             
             updateStats();
-            saveGame();
+            saveUserData();
             startPremiumTimer();
         }
         
@@ -777,7 +886,7 @@
                         }
                         
                         updateStats();
-                        saveGame();
+                        saveUserData();
                     }
                 }, 1000);
                 
@@ -793,7 +902,7 @@
         
         // Обновление статистики
         function updateStats() {
-            gemsCountElement.textContent = gems;
+            gemsCountElement.textContent = gems.toFixed(1); // Отображаем с одной десятной
             damageStatElement.textContent = `${Math.round(damageMultiplier * 100)}%`;
             incomeStatElement.textContent = `${Math.round(incomeMultiplier * 100)}%`;
             
@@ -801,8 +910,33 @@
             premiumButton.disabled = gems < 30 || premiumActive;
         }
         
-        // Показать информацию
-        function showInfo(title, text) {
+        // Показать информацию о персонаже
+        function showCharacterInfo(character) {
+            let title = '';
+            let text = '';
+            
+            switch(character) {
+                case 'alice':
+                    title = 'Алиса';
+                    text = 'Стандартный персонаж без особых способностей. Хороша для начала игры.';
+                    break;
+                case 'madina':
+                    title = 'Мадина';
+                    text = 'Этот персонаж дает бонус +10% к урону по Королеве Ада.';
+                    break;
+                case 'zulfiya':
+                    title = 'Зульфия';
+                    text = 'Этот персонаж дает бонус +20% к получаемым гемам.';
+                    break;
+            }
+            
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-text').textContent = text;
+            document.getElementById('info-modal').style.display = 'flex';
+        }
+        
+        // Показать информацию о предмете
+        function showItemInfo(title, text) {
             document.getElementById('modal-title').textContent = title;
             document.getElementById('modal-text').textContent = text;
             document.getElementById('info-modal').style.display = 'flex';
@@ -813,9 +947,11 @@
             document.getElementById('info-modal').style.display = 'none';
         }
         
-        // Сохранение игры
-        function saveGame() {
-            const gameData = {
+        // Сохранение данных пользователя
+        function saveUserData() {
+            if (!isDataLoaded) return;
+            
+            const userData = {
                 gems,
                 selectedCharacter,
                 premiumActive,
@@ -823,42 +959,82 @@
                 explicitnessLevel,
                 ownedItems,
                 damageMultiplier,
-                incomeMultiplier
+                incomeMultiplier,
+                lastUpdate: Date.now()
             };
             
-            localStorage.setItem('hellQueenGame', JSON.stringify(gameData));
+            database.ref('users/' + userId).set(userData)
+                .catch(error => {
+                    console.error('Ошибка сохранения данных:', error);
+                    // Сохраняем в localStorage как резерв
+                    localStorage.setItem('hellQueenGameBackup', JSON.stringify(userData));
+                });
         }
         
-        // Загрузка игры
-        function loadGame() {
-            const savedData = localStorage.getItem('hellQueenGame');
-            if (savedData) {
-                const gameData = JSON.parse(savedData);
-                
-                gems = gameData.gems || 0;
-                selectedCharacter = gameData.selectedCharacter || 'alice';
-                premiumActive = gameData.premiumActive || false;
-                premiumTimeLeft = gameData.premiumTimeLeft || 0;
-                explicitnessLevel = gameData.explicitnessLevel || 1;
-                ownedItems = gameData.ownedItems || [];
-                damageMultiplier = gameData.damageMultiplier || 1.0;
-                incomeMultiplier = gameData.incomeMultiplier || 1.0;
-                
-                // Выбираем сохраненного персонажа
-                document.querySelector(`.character[onclick="selectCharacter('${selectedCharacter}')"]`).click();
-                
-                // Обновляем уровень откровенности
-                updateExplicitnessLevel();
-                
-                // Если премиум активен, запускаем таймер
-                if (premiumActive) {
-                    startPremiumTimer();
+        // Загрузка данных пользователя
+        function loadUserData() {
+            // Проверяем, есть ли резервная копия в localStorage
+            const backupData = localStorage.getItem('hellQueenGameBackup');
+            if (backupData) {
+                try {
+                    const gameData = JSON.parse(backupData);
+                    applyLoadedData(gameData);
+                } catch (e) {
+                    console.error('Ошибка загрузки резервных данных:', e);
                 }
             }
+            
+            // Загружаем данные из Firebase
+            database.ref('users/' + userId).once('value')
+                .then(snapshot => {
+                    const data = snapshot.val();
+                    if (data) {
+                        applyLoadedData(data);
+                    }
+                    isDataLoaded = true;
+                    hideLoading();
+                })
+                .catch(error => {
+                    console.error('Ошибка загрузки данных:', error);
+                    isDataLoaded = true;
+                    hideLoading();
+                });
+        }
+        
+        // Применение загруженных данных
+        function applyLoadedData(gameData) {
+            gems = gameData.gems || 0;
+            selectedCharacter = gameData.selectedCharacter || 'alice';
+            premiumActive = gameData.premiumActive || false;
+            premiumTimeLeft = gameData.premiumTimeLeft || 0;
+            explicitnessLevel = gameData.explicitnessLevel || 1;
+            ownedItems = gameData.ownedItems || [];
+            damageMultiplier = gameData.damageMultiplier || 1.0;
+            incomeMultiplier = gameData.incomeMultiplier || 1.0;
+            
+            // Выбираем сохраненного персонажа
+            document.querySelector(`.character[onclick="selectCharacter('${selectedCharacter}')"]`).click();
+            
+            // Обновляем уровень откровенности
+            updateExplicitnessLevel();
+            
+            // Если премиум активен, запускаем таймер
+            if (premiumActive) {
+                startPremiumTimer();
+            }
+            
+            updateStats();
         }
         
         // Инициализация игры при загрузке
         window.onload = initGame;
+        
+        // Сохраняем данные при закрытии страницы
+        window.addEventListener('beforeunload', function() {
+            if (isDataLoaded) {
+                saveUserData();
+            }
+        });
     </script>
 </body>
-</html>
+</
