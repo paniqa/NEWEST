@@ -7,8 +7,8 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --primary-color: #191970;
-            --secondary-color: #4169E1;
+            --primary-color: #333333; /* Тёмно-серый вместо синего */
+            --secondary-color: #555555; /* Серый */
             --background-color: #f0f0f0;
             --card-color: #ffffff;
         }
@@ -168,7 +168,7 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background-color: rgba(25, 25, 112, 0.9);
+            background-color: rgba(51, 51, 51, 0.9); /* Тёмно-серый */
             color: white;
             padding: 10px;
             transform: translateY(100%);
@@ -245,6 +245,28 @@
             opacity: 0.9;
             transform: translateY(-2px);
         }
+        
+        /* Стили для счётчиков предметов */
+        .inventory-display {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+        }
+        
+        .inventory-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .inventory-count {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
     </style>
 </head>
 <body>
@@ -253,35 +275,56 @@
     </div>
 
     <div class="tabs">
-        <div class="tab active" onclick="showTab('fields')">Поля</div>
+        <div class="tab active" onclick="showTab('battle')">Сражение</div>
         <div class="tab" onclick="showTab('character')">Персонаж</div>
         <div class="tab" onclick="showTab('items')">Предметы</div>
         <div class="tab" onclick="showTab('premium')">Премиум</div>
     </div>
 
-    <div id="fields" class="tab-content active">
-        <h2>Поля</h2>
+    <div id="battle" class="tab-content active">
+        <h2>Сражение</h2>
         <p>Кликните на монстра, чтобы заработать Чиркаши</p>
         <div class="monster-container">
             <div class="monster" id="monster" onclick="earnCurrency()"></div>
         </div>
+        
+        <!-- Добавленный блок с инвентарём -->
+        <div class="inventory-display" id="inventoryDisplay">
+            <div class="inventory-item">
+                <span>Зелья силы:</span>
+                <span class="inventory-count" id="potionCount">0</span>
+            </div>
+            <div class="inventory-item">
+                <span>Каловые мечи:</span>
+                <span class="inventory-count" id="swordCount">0</span>
+            </div>
+            <div class="inventory-item">
+                <span>Носки невидимости:</span>
+                <span class="inventory-count" id="sockCount">0</span>
+            </div>
+            <div class="inventory-item">
+                <span>Премиум подписки:</span>
+                <span class="inventory-count" id="premiumCount">0</span>
+            </div>
+        </div>
     </div>
 
+    <!-- Остальные вкладки остаются без изменений -->
     <div id="character" class="tab-content">
         <h2>Персонажи</h2>
         <div class="cards-container">
             <div class="card" onclick="selectCharacter('josephine')">
-                <img src="https://i.imgur.com/pXWzE3k.png" class="card-image" alt="Жозефина" onerror="this.src='https://via.placeholder.com/150/191970/FFFFFF?text=Ж'">
+                <img src="https://i.imgur.com/pXWzE3k.png" class="card-image" alt="Жозефина" onerror="this.src='https://via.placeholder.com/150/333333/FFFFFF?text=Ж'">
                 <div class="card-title">Жозефина</div>
                 <div class="card-description">Выберите этого персонажа</div>
             </div>
             <div class="card" onclick="selectCharacter('alice')">
-                <img src="https://i.imgur.com/QZqYV9d.png" class="card-image" alt="Алиса" onerror="this.src='https://via.placeholder.com/150/191970/FFFFFF?text=А'">
+                <img src="https://i.imgur.com/QZqYV9d.png" class="card-image" alt="Алиса" onerror="this.src='https://via.placeholder.com/150/333333/FFFFFF?text=А'">
                 <div class="card-title">Алиса</div>
                 <div class="card-description">Выберите этого персонажа</div>
             </div>
             <div class="card" onclick="selectCharacter('vasilisa')">
-                <img src="https://i.imgur.com/7n8W6cL.png" class="card-image" alt="Василиса" onerror="this.src='https://via.placeholder.com/150/191970/FFFFFF?text=В'">
+                <img src="https://i.imgur.com/7n8W6cL.png" class="card-image" alt="Василиса" onerror="this.src='https://via.placeholder.com/150/333333/FFFFFF?text=В'">
                 <div class="card-title">Василиса</div>
                 <div class="card-description">Выберите этого персонажа</div>
             </div>
@@ -292,17 +335,17 @@
         <h2>Магазин</h2>
         <div class="cards-container">
             <div class="card" onclick="showConfirmation('potion', 50)">
-                <img src="https://i.imgur.com/LpYtQ3W.png" class="card-image" alt="Зелье силы" onerror="this.src='https://via.placeholder.com/150/191970/FFFFFF?text=Зелье'">
+                <img src="https://i.imgur.com/LpYtQ3W.png" class="card-image" alt="Зелье силы" onerror="this.src='https://via.placeholder.com/150/333333/FFFFFF?text=Зелье'">
                 <div class="card-title">Зелье силы</div>
                 <div class="card-description">Этот товар можно приобрести за 50 Чиркашей</div>
             </div>
             <div class="card" onclick="showConfirmation('sword', 100)">
-                <img src="https://i.imgur.com/9zKm3tP.png" class="card-image" alt="Каловой меч" onerror="this.src='https://via.placeholder.com/150/191970/FFFFFF?text=Меч'">
+                <img src="https://i.imgur.com/9zKm3tP.png" class="card-image" alt="Каловой меч" onerror="this.src='https://via.placeholder.com/150/333333/FFFFFF?text=Меч'">
                 <div class="card-title">Каловой меч</div>
                 <div class="card-description">Этот товар можно приобрести за 100 Чиркашей</div>
             </div>
             <div class="card" onclick="showConfirmation('sock', 150)">
-                <img src="https://i.imgur.com/vVk8VYr.png" class="card-image" alt="Носок невидимости" onerror="this.src='https://via.placeholder.com/150/191970/FFFFFF?text=Носок'">
+                <img src="https://i.imgur.com/vVk8VYr.png" class="card-image" alt="Носок невидимости" onerror="this.src='https://via.placeholder.com/150/333333/FFFFFF?text=Носок'">
                 <div class="card-title">Носок невидимости</div>
                 <div class="card-description">Этот товар можно приобрести за 150 Чиркашей</div>
             </div>
@@ -313,7 +356,7 @@
         <h2>Премиум</h2>
         <div class="cards-container">
             <div class="card" onclick="showConfirmation('premium', 250)">
-                <img src="https://i.imgur.com/mR9WwXg.png" class="card-image" alt="Премиум подписка" onerror="this.src='https://via.placeholder.com/150/191970/FFFFFF?text=Премиум'">
+                <img src="https://i.imgur.com/mR9WwXg.png" class="card-image" alt="Премиум подписка" onerror="this.src='https://via.placeholder.com/150/333333/FFFFFF?text=Премиум'">
                 <div class="card-title">Премиум подписка</div>
                 <div class="card-description">Активируйте премиум на 1 месяц за 250 Чиркашей</div>
             </div>
@@ -347,7 +390,12 @@
         const gameState = {
             currency: 0,
             selectedCharacter: null,
-            inventory: [],
+            inventory: {
+                potion: 0,
+                sword: 0,
+                sock: 0,
+                premium: 0
+            },
             currentPurchase: null
         };
 
@@ -356,11 +404,15 @@
             currency: document.getElementById('currency'),
             monster: document.getElementById('monster'),
             confirmationOverlay: document.getElementById('confirmationOverlay'),
-            confirmationText: document.getElementById('confirmationText')
+            confirmationText: document.getElementById('confirmationText'),
+            potionCount: document.getElementById('potionCount'),
+            swordCount: document.getElementById('swordCount'),
+            sockCount: document.getElementById('sockCount'),
+            premiumCount: document.getElementById('premiumCount')
         };
 
         // Улучшенная система сохранения
-        const STORAGE_KEY = 'chirkashi_save_v3';
+        const STORAGE_KEY = 'chirkashi_save_final';
         
         async function saveGame() {
             const saveData = {
@@ -408,13 +460,39 @@
                 // Восстанавливаем состояние
                 if (loadedData) {
                     gameState.currency = loadedData.currency || 0;
-                    gameState.inventory = loadedData.inventory || [];
-                    gameState.selectedCharacter = loadedData.character || loadedData.selectedCharacter || null;
+                    gameState.selectedCharacter = loadedData.character || null;
+                    
+                    // Обновляем инвентарь
+                    if (loadedData.inventory) {
+                        gameState.inventory.potion = loadedData.inventory.potion || 0;
+                        gameState.inventory.sword = loadedData.inventory.sword || 0;
+                        gameState.inventory.sock = loadedData.inventory.sock || 0;
+                        gameState.inventory.premium = loadedData.inventory.premium || 0;
+                    } else {
+                        // Для старых версий сохранений
+                        gameState.inventory = {
+                            potion: 0,
+                            sword: 0,
+                            sock: 0,
+                            premium: 0
+                        };
+                    }
+                    
+                    updateUI();
                     console.log('Игра загружена:', loadedData);
                 }
             } catch (error) {
                 console.error('Ошибка загрузки:', error);
             }
+        }
+
+        // Обновление интерфейса
+        function updateUI() {
+            elements.currency.textContent = gameState.currency;
+            elements.potionCount.textContent = gameState.inventory.potion;
+            elements.swordCount.textContent = gameState.inventory.sword;
+            elements.sockCount.textContent = gameState.inventory.sock;
+            elements.premiumCount.textContent = gameState.inventory.premium;
         }
 
         // Игровые функции
@@ -430,7 +508,6 @@
 
         function selectCharacter(character) {
             gameState.selectedCharacter = character;
-            updateUI();
             showAlert(`Вы выбрали персонажа: ${getCharacterName(character)}`);
             saveGame();
         }
@@ -449,7 +526,7 @@
             const { item, price } = gameState.currentPurchase;
             if (gameState.currency >= price) {
                 gameState.currency -= price;
-                gameState.inventory.push(item);
+                gameState.inventory[item]++;
                 updateUI();
                 showAlert(`Вы успешно купили ${getItemName(item)}!`);
                 saveGame();
@@ -488,10 +565,6 @@
                 premium: 'Премиум подписку'
             };
             return names[item] || item;
-        }
-
-        function updateUI() {
-            elements.currency.textContent = gameState.currency;
         }
 
         function showAlert(message) {
