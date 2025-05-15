@@ -3,1038 +3,336 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Королева Ада</title>
-    <!-- Подключаем Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <title>Alta Nika's Mini App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary: #ff4d6d;
-            --secondary: #ff8fa3;
-            --dark: #2b2d42;
-            --light: #fff0f3;
-            --accent: #c9184a;
-            --premium: #ffd166;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
         body {
-            background-color: var(--dark);
-            color: var(--light);
-            overflow-x: hidden;
+            background-color: #121212;
+            color: #fff;
+            font-family: Arial, sans-serif;
         }
-        
-        .container {
-            max-width: 100%;
-            padding: 10px;
-        }
-        
-        .tabs {
-            display: flex;
-            margin-bottom: 15px;
-            border-bottom: 2px solid var(--accent);
-        }
-        
-        .tab {
-            padding: 10px 15px;
-            cursor: pointer;
-            background-color: var(--dark);
-            color: var(--light);
-            border: none;
-            font-weight: bold;
-            transition: all 0.3s;
-            position: relative;
-        }
-        
-        .tab.active {
-            background-color: var(--accent);
-            color: white;
-            border-radius: 5px 5px 0 0;
-        }
-        
-        .tab-content {
-            display: none;
-            animation: fadeIn 0.5s;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        /* Босс вкладка */
-        .boss-container {
-            text-align: center;
-            margin-top: 20px;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .boss-image {
-            width: 200px;
-            height: 200px;
-            object-fit: cover;
-            border-radius: 50%;
-            border: 5px solid var(--accent);
-            margin-bottom: 20px;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        
-        .boss-image:hover {
-            transform: scale(1.05);
-        }
-        
-        .boss-image:active {
-            transform: scale(0.95);
-        }
-        
-        .tap-button {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            font-size: 18px;
-            border-radius: 50px;
-            cursor: pointer;
-            margin-top: 10px;
-            font-weight: bold;
-            box-shadow: 0 5px 0 var(--accent);
-            transition: all 0.1s;
-        }
-        
-        .tap-button:active {
-            transform: translateY(5px);
-            box-shadow: 0 0 0 var(--accent);
-        }
-        
-        .damage-animation {
-            position: absolute;
-            color: red;
-            font-size: 24px;
-            font-weight: bold;
-            animation: floatUp 1s forwards;
-            pointer-events: none;
-            z-index: 10;
-        }
-        
-        @keyframes floatUp {
-            0% { transform: translateY(0); opacity: 1; }
-            100% { transform: translateY(-100px); opacity: 0; }
-        }
-        
-        /* Персонажи вкладка */
-        .characters-container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        
-        .character {
-            display: flex;
-            align-items: center;
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 15px;
-            cursor: pointer;
-            transition: all 0.3s;
-            position: relative;
-        }
-        
-        .character:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-        }
-        
-        .character.active {
-            border: 2px solid var(--primary);
-            background-color: rgba(255, 77, 109, 0.2);
-        }
-        
-        .character-image {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-            border-radius: 50%;
-            margin-right: 15px;
-        }
-        
-        .character-info {
-            flex-grow: 1;
-        }
-        
-        .character-name {
-            font-weight: bold;
-            font-size: 18px;
-            margin-bottom: 5px;
-        }
-        
-        /* Магазин вкладка */
-        .shop-categories {
-            display: flex;
-            margin-bottom: 15px;
-        }
-        
-        .shop-category {
-            padding: 10px 15px;
-            cursor: pointer;
-            background-color: rgba(255, 255, 255, 0.1);
-            color: var(--light);
-            border: none;
-            font-weight: bold;
-            transition: all 0.3s;
-            margin-right: 5px;
-            border-radius: 5px;
-        }
-        
-        .shop-category.active {
-            background-color: var(--primary);
-        }
-        
-        .shop-category-content {
-            display: none;
-        }
-        
-        .shop-category-content.active {
-            display: block;
-            animation: fadeIn 0.5s;
-        }
-        
-        .shop-items {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 15px;
-        }
-        
-        .shop-item {
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 15px;
-            text-align: center;
-            position: relative;
-            transition: all 0.3s;
-        }
-        
-        .shop-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-        
-        .item-image {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-            border-radius: 10px;
-            margin-bottom: 10px;
-        }
-        
-        .item-name {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .item-price {
-            color: var(--premium);
-            font-weight: bold;
-        }
-        
-        .buy-button {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            margin-top: 10px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.2s;
-        }
-        
-        .buy-button:disabled {
-            background-color: gray;
-            cursor: not-allowed;
-        }
-        
-        .buy-button:active:not(:disabled) {
-            transform: scale(0.95);
-        }
-        
-        /* Настройки вкладка */
-        .settings-container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        
-        .stats-card {
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 15px;
-        }
-        
-        .stat {
+        #header {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
+            align-items: center;
+            padding: 10px;
+            background-color: #1e1e1e;
         }
-        
-        .stat-value {
-            font-weight: bold;
+        .neon-icon {
+            color: #fff;
+            text-shadow: 0 0 5px #fff, 0 0 10px #ff69b4, 0 0 15px #ff69b4;
+            margin-right: 5px;
         }
-        
-        .premium-card {
-            background: linear-gradient(135deg, var(--premium), #f8961e);
-            color: var(--dark);
-            border-radius: 10px;
-            padding: 15px;
-            text-align: center;
-        }
-        
-        .premium-title {
-            font-weight: bold;
-            font-size: 20px;
-            margin-bottom: 10px;
-        }
-        
-        .premium-button {
-            background-color: var(--dark);
-            color: var(--premium);
-            border: none;
-            padding: 10px 20px;
-            border-radius: 50px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: all 0.3s;
-        }
-        
-        .premium-button:hover {
-            transform: scale(1.05);
-        }
-        
-        .premium-button:active {
-            transform: scale(0.95);
-        }
-        
-        .premium-timer {
-            font-weight: bold;
-            margin-top: 10px;
-            font-size: 18px;
-        }
-        
-        /* Информационная иконка */
-        .info-icon {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            width: 20px;
-            height: 20px;
-            background-color: var(--primary);
-            color: white;
-            border-radius: 50%;
+        #affection-container {
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            cursor: help;
-            font-size: 14px;
-            z-index: 5;
+            margin-left: 20px;
         }
-        
-        .modal {
-            display: none;
-            position: fixed;
+        #affection-container span {
+            margin-right: 10px;
+            color: #fff;
+        }
+        #affection-container i {
+            margin-left: 10px;
+        }
+        #affection-bar {
+            width: 200px;
+            height: 20px;
+            background-color: #333;
+            border: 1px solid #ff69b4;
+            box-shadow: 0 0 5px rgba(255, 105, 180, 0.5), 0 0 10px rgba(255, 105, 180, 0.5);
+            position: relative;
+        }
+        .affection-level {
+            height: 100%;
+            background-color: #ff69b4;
+            box-shadow: 0 0 5px rgba(255, 105, 180, 0.5), 0 0 10px rgba(255, 105, 180, 0.5);
+            transition: width 0.5s ease-in-out;
+            width: 0%;
+        }
+        .card {
+            background-color: #1e1e1e;
+            color: #fff;
+            position: relative;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border: 2px solid #ff69b4;
+            box-shadow: 0 0 5px rgba(255, 105, 180, 0.5);
+            pointer-events: none;
+        }
+        .card-image {
+            position: relative;
+        }
+        .info-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            color: #fff;
+            text-shadow: 0 0 5px #fff, 0 0 10px #ff69b4;
+            font-size: 20px;
+        }
+        .description-overlay {
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.7);
-            z-index: 100;
-            align-items: center;
+            display: none;
             justify-content: center;
-        }
-        
-        .modal-content {
-            background-color: var(--dark);
-            padding: 20px;
-            border-radius: 10px;
-            max-width: 80%;
-            max-height: 80%;
-            overflow-y: auto;
-            border: 2px solid var(--primary);
-        }
-        
-        .modal-title {
-            font-weight: bold;
-            font-size: 20px;
-            margin-bottom: 10px;
-            color: var(--primary);
-        }
-        
-        .close-modal {
-            float: right;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 20px;
-        }
-        
-        /* Анимация получения гема */
-        .gem-animation {
-            position: absolute;
-            color: var(--premium);
-            font-size: 20px;
-            font-weight: bold;
-            animation: floatUpGem 1s forwards;
-            pointer-events: none;
-            z-index: 10;
-        }
-        
-        @keyframes floatUpGem {
-            0% { transform: translateY(0) scale(1); opacity: 1; }
-            100% { transform: translateY(-80px) scale(1.5); opacity: 0; }
-        }
-        
-        /* Уровень откровенности */
-        .explicitness-level {
-            display: flex;
             align-items: center;
-            margin-top: 10px;
+            color: #fff;
+            font-size: 16px;
+            padding: 20px;
+            box-sizing: border-box;
+            backdrop-filter: blur(5px);
         }
-        
-        .level-bar {
-            flex-grow: 1;
-            height: 10px;
-            background-color: rgba(255, 255, 255, 0.2);
-            border-radius: 5px;
-            margin: 0 10px;
-            overflow: hidden;
+        .card-title {
+            font-family: 'Orbitron', sans-serif;
         }
-        
-        .level-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #ff758c, #ff7eb3);
-            width: 20%;
-            transition: width 0.5s;
+        .neon-button {
+            background-color: #ff69b4;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(255, 105, 180, 0.5), 0 0 10px rgba(255, 105, 180, 0.5);
+            transition: all 0.3s ease-in-out;
         }
-        
-        .level-text {
-            font-weight: bold;
-            min-width: 30px;
+        .neon-button:hover {
+            box-shadow: 0 0 10px rgba(255, 105, 180, 0.7), 0 0 15px rgba(255, 105, 180, 0.7);
         }
-        
-        /* Индикатор загрузки */
-        .loader {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid var(--primary);
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .card:hover {
+            transform: scale(1.05);
+            transition: transform 0.3s ease-in-out;
+            box-shadow: 0 0 10px rgba(255, 105, 180, 0.5);
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="tabs">
-            <button class="tab active" onclick="openTab('boss')">Королева</button>
-            <button class="tab" onclick="openTab('characters')">Персонажи</button>
-            <button class="tab" onclick="openTab('shop')">Товары</button>
-            <button class="tab" onclick="openTab('settings')">Настройки</button>
+    <div id="header" class="container">
+        <div>
+            <i class="fas fa-gem neon-icon"></i> <span id="gems">50000</span>
+            <i class="fas fa-comment neon-icon"></i> <span id="requests">100</span>
         </div>
-        
-        <!-- Вкладка с боссом -->
-        <div id="boss" class="tab-content active">
-            <div class="boss-container">
-                <img src="https://i.imgur.com/JQlE5gP.png" alt="Королева Ада" class="boss-image" id="boss-image">
-                <button class="tap-button" id="tap-button">Атаковать!</button>
+        <div id="affection-container">
+            <span>Влюбленность:</span>
+            <div id="affection-bar">
+                <div class="affection-level"></div>
             </div>
+            <i class="fas fa-heart neon-icon"></i>
         </div>
-        
-        <!-- Вкладка с персонажами -->
-        <div id="characters" class="tab-content">
-            <div class="characters-container">
-                <div class="character active" onclick="selectCharacter('alice')">
-                    <img src="https://i.imgur.com/WL3UY3a.png" alt="Алиса" class="character-image">
-                    <div class="character-info">
-                        <div class="character-name">Алиса</div>
-                        <div>Стандартный персонаж</div>
-                    </div>
-                    <div class="info-icon" onclick="showCharacterInfo('alice'); event.stopPropagation();">!</div>
-                </div>
-                
-                <div class="character" onclick="selectCharacter('madina')">
-                    <img src="https://i.imgur.com/5XZwz7p.png" alt="Мадина" class="character-image">
-                    <div class="character-info">
-                        <div class="character-name">Мадина</div>
-                        <div>+10% к урону</div>
-                    </div>
-                    <div class="info-icon" onclick="showCharacterInfo('madina'); event.stopPropagation();">!</div>
-                </div>
-                
-                <div class="character" onclick="selectCharacter('zulfiya')">
-                    <img src="https://i.imgur.com/9GkLx6S.png" alt="Зульфия" class="character-image">
-                    <div class="character-info">
-                        <div class="character-name">Зульфия</div>
-                        <div>+20% к доходу</div>
-                    </div>
-                    <div class="info-icon" onclick="showCharacterInfo('zulfiya'); event.stopPropagation();">!</div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Вкладка с магазином -->
-        <div id="shop" class="tab-content">
-            <div class="shop-categories">
-                <button class="shop-category active" onclick="openShopCategory('clothes')">Одежда</button>
-                <button class="shop-category" onclick="openShopCategory('items')">Предметы</button>
-            </div>
-            
-            <div id="clothes" class="shop-category-content active">
-                <div class="shop-items">
-                    <div class="shop-item">
-                        <img src="https://i.imgur.com/KYjJQ2W.png" alt="Одеяние совращения" class="item-image">
-                        <div class="item-name">Одеяние совращения</div>
-                        <div class="item-price">15 гемов</div>
-                        <button class="buy-button" onclick="buyItem('seduction_robe', 15)">Купить</button>
-                        <div class="info-icon" onclick="showItemInfo('Одеяние совращения', 'Сексуальное одеяние, которое увеличивает вашу привлекательность.')">!</div>
-                    </div>
-                    
-                    <div class="shop-item">
-                        <img src="https://i.imgur.com/3mZQx8T.png" alt="Ушки кошко-девочки" class="item-image">
-                        <div class="item-name">Ушки кошко-девочки</div>
-                        <div class="item-price">25 гемов</div>
-                        <button class="buy-button" onclick="buyItem('cat_ears', 25)">Купить</button>
-                        <div class="info-icon" onclick="showItemInfo('Ушки кошко-девочки', 'Милые ушки, которые делают вас неотразимой.')">!</div>
-                    </div>
-                    
-                    <div class="shop-item">
-                        <img src="https://i.imgur.com/JzLQq9G.png" alt="Латексная броня" class="item-image">
-                        <div class="item-name">Латексная броня</div>
-                        <div class="item-price">35 гемов</div>
-                        <button class="buy-button" onclick="buyItem('latex_armor', 35)">Купить</button>
-                        <div class="info-icon" onclick="showItemInfo('Латексная броня', 'Стильная и функциональная броня для настоящих воительниц.')">!</div>
+    </div>
+    <div class="container mt-3">
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="character-tab" data-bs-toggle="tab" data-bs-target="#character" type="button" role="tab" aria-controls="character" aria-selected="true">Персонаж</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="products-tab" data-bs-toggle="tab" data-bs-target="#products" type="button" role="tab" aria-controls="products" aria-selected="false">Товары</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="false">Профиль</button>
+            </li>
+        </ul>
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="character" role="tabpanel" aria-labelledby="character-tab">
+                <div class="card">
+                    <img src="https://via.placeholder.com/150x200?text=Nika" class="card-img-top" alt="Nika">
+                    <div class="card-body">
+                        <h5 class="card-title">Альтушка Ника</h5>
+                        <p class="card-text">Романтичная и стеснительная девушка, которая любит общаться и делиться своими чувствами.</p>
                     </div>
                 </div>
             </div>
-            
-            <div id="items" class="shop-category-content">
-                <div class="shop-items">
-                    <div class="shop-item">
-                        <img src="https://i.imgur.com/Lp3yJXq.png" alt="Вино" class="item-image">
-                        <div class="item-name">Вино</div>
-                        <div class="item-price">5 гемов</div>
-                        <button class="buy-button" onclick="buyItem('wine', 5)">Купить</button>
-                        <div class="info-icon" onclick="showItemInfo('Вино', 'Повышает уровень откровенности на +1.')">!</div>
-                    </div>
-                    
-                    <div class="shop-item">
-                        <img src="https://i.imgur.com/8Q6Xg9P.png" alt="Гипнотический шар" class="item-image">
-                        <div class="item-name">Гипнотический шар</div>
-                        <div class="item-price">20 гемов</div>
-                        <button class="buy-button" onclick="buyItem('hypno_ball', 20)">Купить</button>
-                        <div class="info-icon" onclick="showItemInfo('Гипнотический шар', 'Открывает максимальный уровень откровенности (5 уровень).')">!</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Вкладка с настройками -->
-        <div id="settings" class="tab-content">
-            <div class="settings-container">
-                <div class="stats-card">
-                    <div class="stat">
-                        <span>Гемы:</span>
-                        <span class="stat-value" id="gems-count">0</span>
-                    </div>
-                    <div class="stat">
-                        <span>Уровень откровенности:</span>
-                        <div class="explicitness-level">
-                            <span class="level-text" id="explicitness-level">1</span>
-                            <div class="level-bar">
-                                <div class="level-fill" id="level-fill" style="width: 20%"></div>
+            <div class="tab-pane fade" id="products" role="tabpanel" aria-labelledby="products-tab">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card mb-4">
+                            <div class="card-image">
+                                <img src="https://images.pexels.com/photos/326503/pexels-photo-326503.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" class="card-img-top" alt="Бутылка вина">
+                                <div class="info-button">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                </div>
+                                <div class="description-overlay">
+                                    <p>Бутылка Вина - Ника раскрепощается и желает больше общения, повышается влюбленность и откровенность.</p>
+                                </div>
                             </div>
-                            <span class="level-text">5</span>
+                            <div class="card-body">
+                                <h5 class="card-title">Бутылка вина</h5>
+                                <p class="card-text">Стоимость: 290 гемов</p>
+                                <button class="neon-button" onclick="buyProduct('wine')">Купить</button>
+                            </div>
                         </div>
                     </div>
-                    <div class="stat">
-                        <span>Урон:</span>
-                        <span class="stat-value" id="damage-stat">100%</span>
+                    <div class="col-md-4">
+                        <div class="card mb-4">
+                            <div class="card-image">
+                                <img src="https://images.pexels.com/photos/4290944/pexels-photo-4290944.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" class="card-img-top" alt="Букет цветов">
+                                <div class="info-button">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                </div>
+                                <div class="description-overlay">
+                                    <p>990 черных роз заставят её проникнуться чувствами и желанием к вам.</p>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">Букет цветов</h5>
+                                <p class="card-text">Стоимость: 490 гемов</p>
+                                <button class="neon-button" onclick="buyProduct('flowers')">Купить</button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="stat">
-                        <span>Доход:</span>
-                        <span class="stat-value" id="income-stat">100%</span>
+                    <div class="col-md-4">
+                        <div class="card mb-4">
+                            <div class="card-image">
+                                <img src="https://images.pexels.com/photos/3759501/pexels-photo-3759501.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" class="card-img-top" alt="Кожаная мечта">
+                                <div class="info-button">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                </div>
+                                <div class="description-overlay">
+                                    <p>Кастомная кожанка редчайшего бренда, она будет неимоверно рада и счастлива, наслаждайтесь общением вместе по максимуму!</p>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">Кожаная мечта</h5>
+                                <p class="card-text">Стоимость: 1190 гемов</p>
+                                <button class="neon-button" onclick="buyProduct('leather')">Купить</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="premium-card">
-                    <div class="premium-title">ПРЕМИУМ</div>
-                    <p>Получите +50% к урону и доходу на 60 секунд!</p>
-                    <button class="premium-button" id="premium-button" onclick="buyPremium()">Купить за 30 гемов</button>
-                    <div class="premium-timer" id="premium-timer"></div>
-                </div>
-                
-                <div id="user-id-display" style="text-align: center; margin-top: 20px;"></div>
+            </div>
+            <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                <h3>Профиль пользователя</h3>
+                <p>Всего потрачено гемов: <span id="total-spent">0</span></p>
+                <p>Куплено предметов: <span id="items-purchased">0</span></p>
+                <p>Уровень влюбленности: <span id="affection-level">0</span>%</p>
             </div>
         </div>
     </div>
-    
-    <!-- Модальное окно с информацией -->
-    <div class="modal" id="info-modal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeModal()">&times;</span>
-            <div class="modal-title" id="modal-title">Информация</div>
-            <div id="modal-text">Текст информации</div>
-        </div>
-    </div>
-    
-    <!-- Индикатор загрузки -->
-    <div class="modal" id="loading-modal">
-        <div class="modal-content" style="text-align: center;">
-            <div class="loader"></div>
-            <div>Загрузка данных...</div>
-        </div>
-    </div>
-    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Инициализация Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyD5u2zQ3J5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5",
-            authDomain: "hellqueen-game.firebaseapp.com",
-            databaseURL: "https://hellqueen-game-default-rtdb.firebaseio.com",
-            projectId: "hellqueen-game",
-            storageBucket: "hellqueen-game.appspot.com",
-            messagingSenderId: "123456789012",
-            appId: "1:123456789012:web:5a5a5a5a5a5a5a5a5a5a5a"
-        };
-        
-        // Инициализируем Firebase
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-        
-        // Игровые переменные
-        let gems = 0;
-        let selectedCharacter = 'alice';
-        let damageMultiplier = 1.0;
-        let incomeMultiplier = 1.0;
-        let premiumActive = false;
-        let premiumTimeLeft = 0;
-        let explicitnessLevel = 1;
-        let ownedItems = [];
-        let premiumInterval;
-        let userId = '';
-        let isDataLoaded = false;
-        
-        // DOM элементы
-        const bossImage = document.getElementById('boss-image');
-        const tapButton = document.getElementById('tap-button');
-        const gemsCountElement = document.getElementById('gems-count');
-        const damageStatElement = document.getElementById('damage-stat');
-        const incomeStatElement = document.getElementById('income-stat');
-        const premiumTimerElement = document.getElementById('premium-timer');
-        const premiumButton = document.getElementById('premium-button');
-        const explicitnessLevelElement = document.getElementById('explicitness-level');
-        const levelFillElement = document.getElementById('level-fill');
-        const userIdDisplay = document.getElementById('user-id-display');
-        const loadingModal = document.getElementById('loading-modal');
-        
-        // Инициализация игры
-        function initGame() {
-            showLoading();
-            
-            // Генерируем или получаем ID пользователя
-            userId = localStorage.getItem('userId');
-            if (!userId) {
-                userId = 'user_' + Math.random().toString(36).substr(2, 9);
-                localStorage.setItem('userId', userId);
-            }
-            
-            userIdDisplay.textContent = `ID: ${userId}`;
-            
-            // Загружаем данные пользователя
-            loadUserData();
+        window.Telegram.WebApp.ready();
+
+        let affection = 0;
+        let gems = 50000;
+        let requests = 100;
+        let totalSpent = 0;
+        let itemsPurchased = 0;
+
+        // Load state from cloud storage
+        if (window.Telegram.WebApp.CloudStorage) {
+            window.Telegram.WebApp.CloudStorage.getItems(['gameState'], (error, result) => {
+                if (!error && result['gameState']) {
+                    const data = JSON.parse(result['gameState']);
+                    affection = data.affection || 0;
+                    gems = data.gems || 50000;
+                    requests = data.requests || 100;
+                    totalSpent = data.totalSpent || 0;
+                    itemsPurchased = data.itemsPurchased || 0;
+                    updateDisplay();
+                }
+            });
         }
-        
-        // Показать загрузку
-        function showLoading() {
-            loadingModal.style.display = 'flex';
-        }
-        
-        // Скрыть загрузку
-        function hideLoading() {
-            loadingModal.style.display = 'none';
-        }
-        
-        // Открытие вкладки
-        function openTab(tabName) {
-            // Очищаем анимации при переключении вкладок
-            if (tabName === 'boss') {
-                const animations = document.querySelectorAll('.damage-animation, .gem-animation');
-                animations.forEach(anim => anim.remove());
-            }
-            
-            const tabs = document.getElementsByClassName('tab');
-            for (let i = 0; i < tabs.length; i++) {
-                tabs[i].classList.remove('active');
-            }
-            
-            const tabContents = document.getElementsByClassName('tab-content');
-            for (let i = 0; i < tabContents.length; i++) {
-                tabContents[i].classList.remove('active');
-            }
-            
-            document.querySelector(`.tab[onclick="openTab('${tabName}')"]`).classList.add('active');
-            document.getElementById(tabName).classList.add('active');
-        }
-        
-        // Открытие категории в магазине
-        function openShopCategory(categoryName) {
-            const categories = document.querySelectorAll('.shop-category');
-            categories.forEach(cat => cat.classList.remove('active'));
-            
-            const categoryContents = document.querySelectorAll('.shop-category-content');
-            categoryContents.forEach(content => content.classList.remove('active'));
-            
-            document.querySelector(`.shop-category[onclick="openShopCategory('${categoryName}')"]`).classList.add('active');
-            document.getElementById(categoryName).classList.add('active');
-        }
-        
-        // Выбор персонажа
-        function selectCharacter(character) {
-            const characters = document.querySelectorAll('.character');
-            characters.forEach(char => char.classList.remove('active'));
-            
-            document.querySelector(`.character[onclick="selectCharacter('${character}')"]`).classList.add('active');
-            selectedCharacter = character;
-            
-            // Обновляем множители в зависимости от персонажа
-            switch(character) {
-                case 'alice':
-                    damageMultiplier = 1.0;
-                    incomeMultiplier = 1.0;
-                    break;
-                case 'madina':
-                    damageMultiplier = 1.1;
-                    incomeMultiplier = 1.0;
-                    break;
-                case 'zulfiya':
-                    damageMultiplier = 1.0;
-                    incomeMultiplier = 1.2;
-                    break;
-            }
-            
-            // Применяем премиум бонус если активен
-            if (premiumActive) {
-                damageMultiplier *= 1.5;
-                incomeMultiplier *= 1.5;
-            }
-            
-            updateStats();
-            saveUserData();
-        }
-        
-        // Атака босса
-        tapButton.addEventListener('click', function() {
-            // Ограничиваем количество анимаций
-            const existingAnimations = document.querySelectorAll('.damage-animation, .gem-animation');
-            if (existingAnimations.length > 5) {
-                existingAnimations[0].remove();
-            }
-            
-            // Анимация урона
-            const damage = document.createElement('div');
-            damage.className = 'damage-animation';
-            damage.textContent = 'Урон!';
-            damage.style.left = `${Math.random() * 70 + 15}%`;
-            bossImage.parentNode.appendChild(damage);
-            
-            // Анимация изображения босса
-            bossImage.style.transform = 'scale(0.95)';
-            setTimeout(() => {
-                bossImage.style.transform = 'scale(1)';
-            }, 100);
-            
-            // Получение гемов (округляем до десятых)
-            let gemsEarned = Math.round(1 * incomeMultiplier * 10) / 10;
-            gems += gemsEarned;
-            
-            // Анимация получения гемов
-            const gem = document.createElement('div');
-            gem.className = 'gem-animation';
-            gem.textContent = `+${gemsEarned.toFixed(1)} гем`;
-            gem.style.left = `${Math.random() * 70 + 15}%`;
-            bossImage.parentNode.appendChild(gem);
-            
-            updateStats();
-            saveUserData();
-        });
-        
-        // Покупка предмета
-        function buyItem(itemId, price) {
-            if (gems < price) {
-                alert('Недостаточно гемов!');
-                return;
-            }
-            
-            gems -= price;
-            
-            // Обработка эффектов предметов
-            switch(itemId) {
-                case 'wine':
-                    if (explicitnessLevel < 5) {
-                        explicitnessLevel += 1;
-                        updateExplicitnessLevel();
-                    } else {
-                        alert('У вас уже максимальный уровень откровенности!');
-                        gems += price; // Возвращаем деньги
-                        return;
-                    }
-                    break;
-                case 'hypno_ball':
-                    if (explicitnessLevel < 5) {
-                        explicitnessLevel = 5;
-                        updateExplicitnessLevel();
-                    } else {
-                        alert('У вас уже максимальный уровень откровенности!');
-                        gems += price; // Возвращаем деньги
-                        return;
-                    }
-                    break;
-                default:
-                    if (!ownedItems.includes(itemId)) {
-                        ownedItems.push(itemId);
-                    } else {
-                        alert('Этот предмет уже куплен!');
-                        gems += price; // Возвращаем деньги
-                        return;
-                    }
-                    break;
-            }
-            
-            updateStats();
-            saveUserData();
-            alert('Покупка совершена!');
-        }
-        
-        // Покупка премиума
-        function buyPremium() {
-            if (premiumActive) {
-                alert('Премиум уже активен!');
-                return;
-            }
-            
-            if (gems < 30) {
-                alert('Недостаточно гемов!');
-                return;
-            }
-            
-            gems -= 30;
-            premiumActive = true;
-            premiumTimeLeft = 60;
-            
-            // Обновляем множители
-            damageMultiplier *= 1.5;
-            incomeMultiplier *= 1.5;
-            
-            updateStats();
-            saveUserData();
-            startPremiumTimer();
-        }
-        
-        // Таймер премиума
-        function startPremiumTimer() {
-            clearInterval(premiumInterval);
-            
-            if (premiumActive) {
-                premiumInterval = setInterval(function() {
-                    premiumTimeLeft--;
-                    premiumTimerElement.textContent = `Осталось: ${premiumTimeLeft} сек`;
-                    
-                    if (premiumTimeLeft <= 0) {
-                        clearInterval(premiumInterval);
-                        premiumActive = false;
-                        premiumTimerElement.textContent = '';
-                        
-                        // Сбрасываем множители
-                        switch(selectedCharacter) {
-                            case 'alice':
-                                damageMultiplier = 1.0;
-                                incomeMultiplier = 1.0;
-                                break;
-                            case 'madina':
-                                damageMultiplier = 1.1;
-                                incomeMultiplier = 1.0;
-                                break;
-                            case 'zulfiya':
-                                damageMultiplier = 1.0;
-                                incomeMultiplier = 1.2;
-                                break;
-                        }
-                        
-                        updateStats();
-                        saveUserData();
-                    }
-                }, 1000);
-                
-                premiumTimerElement.textContent = `Осталось: ${premiumTimeLeft} сек`;
-            }
-        }
-        
-        // Обновление уровня откровенности
-        function updateExplicitnessLevel() {
-            explicitnessLevelElement.textContent = explicitnessLevel;
-            levelFillElement.style.width = `${(explicitnessLevel / 5) * 100}%`;
-        }
-        
-        // Обновление статистики
-        function updateStats() {
-            gemsCountElement.textContent = gems.toFixed(1); // Отображаем с одной десятной
-            damageStatElement.textContent = `${Math.round(damageMultiplier * 100)}%`;
-            incomeStatElement.textContent = `${Math.round(incomeMultiplier * 100)}%`;
-            
-            // Блокируем кнопку покупки премиума если не хватает денег или уже активен
-            premiumButton.disabled = gems < 30 || premiumActive;
-        }
-        
-        // Показать информацию о персонаже
-        function showCharacterInfo(character) {
-            let title = '';
-            let text = '';
-            
-            switch(character) {
-                case 'alice':
-                    title = 'Алиса';
-                    text = 'Стандартный персонаж без особых способностей. Хороша для начала игры.';
-                    break;
-                case 'madina':
-                    title = 'Мадина';
-                    text = 'Этот персонаж дает бонус +10% к урону по Королеве Ада.';
-                    break;
-                case 'zulfiya':
-                    title = 'Зульфия';
-                    text = 'Этот персонаж дает бонус +20% к получаемым гемам.';
-                    break;
-            }
-            
-            document.getElementById('modal-title').textContent = title;
-            document.getElementById('modal-text').textContent = text;
-            document.getElementById('info-modal').style.display = 'flex';
-        }
-        
-        // Показать информацию о предмете
-        function showItemInfo(title, text) {
-            document.getElementById('modal-title').textContent = title;
-            document.getElementById('modal-text').textContent = text;
-            document.getElementById('info-modal').style.display = 'flex';
-        }
-        
-        // Закрыть модальное окно
-        function closeModal() {
-            document.getElementById('info-modal').style.display = 'none';
-        }
-        
-        // Сохранение данных пользователя
-        function saveUserData() {
-            if (!isDataLoaded) return;
-            
-            const userData = {
-                gems,
-                selectedCharacter,
-                premiumActive,
-                premiumTimeLeft,
-                explicitnessLevel,
-                ownedItems,
-                damageMultiplier,
-                incomeMultiplier,
-                lastUpdate: Date.now()
-            };
-            
-            database.ref('users/' + userId).set(userData)
-                .catch(error => {
-                    console.error('Ошибка сохранения данных:', error);
-                    // Сохраняем в localStorage как резерв
-                    localStorage.setItem('hellQueenGameBackup', JSON.stringify(userData));
-                });
-        }
-        
-        // Загрузка данных пользователя
-        function loadUserData() {
-            // Проверяем, есть ли резервная копия в localStorage
-            const backupData = localStorage.getItem('hellQueenGameBackup');
-            if (backupData) {
-                try {
-                    const gameData = JSON.parse(backupData);
-                    applyLoadedData(gameData);
-                } catch (e) {
-                    console.error('Ошибка загрузки резервных данных:', e);
+
+        function buyProduct(product) {
+            if (product === 'wine') {
+                if (gems >= 290) {
+                    gems -= 290;
+                    totalSpent += 290;
+                    itemsPurchased++;
+                    affection += 20;
+                    requests += 100;
+                } else {
+                    window.Telegram.WebApp.showAlert('Недостаточно гемов!');
+                    return;
+                }
+            } else if (product === 'flowers') {
+                if (gems >= 490) {
+                    gems -= 490;
+                    totalSpent += 490;
+                    itemsPurchased++;
+                    affection += 30;
+                } else {
+                    window.Telegram.WebApp.showAlert('Недостаточно гемов!');
+                    return;
+                }
+            } else if (product === 'leather') {
+                if (gems >= 1190) {
+                    gems -= 1190;
+                    totalSpent += 1190;
+                    itemsPurchased++;
+                    affection += 50;
+                    requests += 200;
+                } else {
+                    window.Telegram.WebApp.showAlert('Недостаточно гемов!');
+                    return;
                 }
             }
-            
-            // Загружаем данные из Firebase
-            database.ref('users/' + userId).once('value')
-                .then(snapshot => {
-                    const data = snapshot.val();
-                    if (data) {
-                        applyLoadedData(data);
-                    }
-                    isDataLoaded = true;
-                    hideLoading();
-                })
-                .catch(error => {
-                    console.error('Ошибка загрузки данных:', error);
-                    isDataLoaded = true;
-                    hideLoading();
-                });
+            if (affection > 100) affection = 100;
+            updateDisplay();
+            saveState();
         }
-        
-        // Применение загруженных данных
-        function applyLoadedData(gameData) {
-            gems = gameData.gems || 0;
-            selectedCharacter = gameData.selectedCharacter || 'alice';
-            premiumActive = gameData.premiumActive || false;
-            premiumTimeLeft = gameData.premiumTimeLeft || 0;
-            explicitnessLevel = gameData.explicitnessLevel || 1;
-            ownedItems = gameData.ownedItems || [];
-            damageMultiplier = gameData.damageMultiplier || 1.0;
-            incomeMultiplier = gameData.incomeMultiplier || 1.0;
-            
-            // Выбираем сохраненного персонажа
-            document.querySelector(`.character[onclick="selectCharacter('${selectedCharacter}')"]`).click();
-            
-            // Обновляем уровень откровенности
-            updateExplicitnessLevel();
-            
-            // Если премиум активен, запускаем таймер
-            if (premiumActive) {
-                startPremiumTimer();
-            }
-            
-            updateStats();
+
+        function updateDisplay() {
+            document.getElementById('gems').textContent = gems;
+            document.getElementById('requests').textContent = requests;
+            document.getElementById('total-spent').textContent = totalSpent;
+            document.getElementById('items-purchased').textContent = itemsPurchased;
+            document.getElementById('affection-level').textContent = affection;
+            updateAffectionBar();
         }
-        
-        // Инициализация игры при загрузке
-        window.onload = initGame;
-        
-        // Сохраняем данные при закрытии страницы
-        window.addEventListener('beforeunload', function() {
-            if (isDataLoaded) {
-                saveUserData();
-            }
+
+        function updateAffectionBar() {
+            const affectionLevel = document.querySelector('.affection-level');
+            const width = (affection / 100) * 100; // percentage
+            affectionLevel.style.width = width + '%';
+        }
+
+        function saveState() {
+            const data = {
+                affection: affection,
+                gems: gems,
+                requests: requests,
+                totalSpent: totalSpent,
+                itemsPurchased: itemsPurchased
+            };
+            window.Telegram.WebApp.CloudStorage.setItem('gameState', JSON.stringify(data), (error) => {
+                if (error) {
+                    console.error('Ошибка сохранения состояния:', error);
+                }
+            });
+        }
+
+        // Handle info buttons
+        document.querySelectorAll('.info-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const overlay = this.parentElement.querySelector('.description-overlay');
+                const img = this.parentElement.querySelector('img');
+                if (overlay.style.display === 'none' || overlay.style.display === '') {
+                    overlay.style.display = 'flex';
+                    img.style.filter = 'blur(5px)';
+                } else {
+                    overlay.style.display = 'none';
+                    img.style.filter = 'none';
+                }
+            });
         });
+
+        // Initial display
+        updateDisplay();
     </script>
 </body>
-</
+</html>
