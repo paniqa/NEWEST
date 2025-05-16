@@ -269,6 +269,14 @@
 
         window.Telegram.WebApp.ready();
 
+        // Инициализация переменных
+        let affection = 0;
+        let gems = 50000;
+        let requests = 100;
+        let totalSpent = 0;
+        let itemsPurchased = 0;
+
+        // Firebase конфигурация
         const firebaseConfig = {
             apiKey: "AIzaSyA2pbT4iiVJj13Wa-0yW77TsjPlrzfZJjk",
             authDomain: "tgtest-ff1d2.firebaseapp.com",
@@ -282,12 +290,6 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const userId = window.Telegram.WebApp.initDataUnsafe?.user?.id || 'anonymous';
-
-        let affection = 0;
-        let gems = 50000;
-        let requests = 100;
-        let totalSpent = 0;
-        let itemsPurchased = 0;
 
         function buyProduct(product) {
             let cost, affectionGain, requestGain;
