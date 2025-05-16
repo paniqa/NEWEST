@@ -348,6 +348,28 @@
             opacity: 1;
         }
 
+        .auth-panel {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        .auth-btn {
+            background: linear-gradient(45deg, #4285F4, #34A853);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin: 5px;
+        }
+
         @media (max-width: 480px) {
             .header {
                 flex-direction: column;
@@ -372,139 +394,146 @@
             <div class="currency">
                 <div class="currency-item">
                     <img src="https://cdn-icons-png.flaticon.com/512/1828/1828884.png" alt="Гемы" class="currency-icon">
-                    <span id="gems">50000</span>
+                    <span id="gems">0</span>
                 </div>
                 <div class="currency-item">
                     <img src="https://cdn-icons-png.flaticon.com/512/1828/1828915.png" alt="Запросы" class="currency-icon">
-                    <span id="requests">100</span>
+                    <span id="requests">0</span>
                 </div>
             </div>
         </div>
 
-        <div class="love-meter">
-            <div class="love-fill" id="loveFill"></div>
-            <div class="love-hearts" id="loveHearts">Уровень влюбленности: 0%</div>
+        <div id="authPanel" class="auth-panel">
+            <h3>Войдите, чтобы играть</h3>
+            <button id="anonAuth" class="auth-btn">Играть как гость</button>
         </div>
 
-        <div class="tabs">
-            <div class="tab active" data-tab="character">Персонаж</div>
-            <div class="tab" data-tab="shop">Товары</div>
-            <div class="tab" data-tab="profile">Профиль</div>
-        </div>
+        <div id="gameContent" style="display: none;">
+            <div class="love-meter">
+                <div class="love-fill" id="loveFill"></div>
+                <div class="love-hearts" id="loveHearts">Уровень влюбленности: 0%</div>
+            </div>
 
-        <div class="tab-content active" id="character">
-            <div class="card character-card">
-                <img src="https://i.pinimg.com/736x/2b/5b/0b/2b5b0b3a3a3a3a3a3a3a3a3a3a3a3a3a.jpg" alt="Ника" class="character-image">
-                <h2 class="character-name">Ника</h2>
-                <p class="character-description">
-                    Романтичная и стеснительная девушка с нежным характером. Ника обожает тихие вечера с хорошей книгой и чашкой чая. 
-                    Она немного замкнута в себе, но если найти к ней подход, открывается как цветок, показывая свою теплую и заботливую натуру.
-                    Её сердце - как хрустальный сосуд, который нужно наполнять любовью и вниманием, но очень осторожно, чтобы не разбить.
-                </p>
-                <div class="love-meter">
-                    <div class="love-fill" id="characterLoveFill"></div>
-                    <div class="love-hearts">Уровень влюбленности: <span id="characterLovePercent">0</span>%</div>
+            <div class="tabs">
+                <div class="tab active" data-tab="character">Персонаж</div>
+                <div class="tab" data-tab="shop">Товары</div>
+                <div class="tab" data-tab="profile">Профиль</div>
+            </div>
+
+            <div class="tab-content active" id="character">
+                <div class="card character-card">
+                    <img src="https://i.pinimg.com/736x/2b/5b/0b/2b5b0b3a3a3a3a3a3a3a3a3a3a3a3a3a.jpg" alt="Ника" class="character-image">
+                    <h2 class="character-name">Ника</h2>
+                    <p class="character-description">
+                        Романтичная и стеснительная девушка с нежным характером. Ника обожает тихие вечера с хорошей книгой и чашкой чая. 
+                        Она немного замкнута в себе, но если найти к ней подход, открывается как цветок, показывая свою теплую и заботливую натуру.
+                        Её сердце - как хрустальный сосуд, который нужно наполнять любовью и вниманием, но очень осторожно, чтобы не разбить.
+                    </p>
+                    <div class="love-meter">
+                        <div class="love-fill" id="characterLoveFill"></div>
+                        <div class="love-hearts">Уровень влюбленности: <span id="characterLovePercent">0</span>%</div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="tab-content" id="shop">
-            <div class="card">
-                <h2>Магазин подарков</h2>
-                <p>Выберите подарок для Ники, чтобы увеличить её уровень влюбленности</p>
-                
-                <div class="shop-item">
-                    <img src="https://cdn-icons-png.flaticon.com/512/3050/3050159.png" alt="Бутылка вина" class="item-image">
-                    <div class="item-info">
-                        <h3 class="item-name">Бутылка вина</h3>
-                        <p class="item-description">Ника раскрепощается и желает больше общения, повышается влюбленность и откровенность.</p>
-                        <div class="item-price">
-                            <img src="https://cdn-icons-png.flaticon.com/512/1828/1828884.png" alt="Гемы" class="currency-icon">
-                            <span>290</span>
+            <div class="tab-content" id="shop">
+                <div class="card">
+                    <h2>Магазин подарков</h2>
+                    <p>Выберите подарок для Ники, чтобы увеличить её уровень влюбленности</p>
+                    
+                    <div class="shop-item">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3050/3050159.png" alt="Бутылка вина" class="item-image">
+                        <div class="item-info">
+                            <h3 class="item-name">Бутылка вина</h3>
+                            <p class="item-description">Ника раскрепощается и желает больше общения, повышается влюбленность и откровенность.</p>
+                            <div class="item-price">
+                                <img src="https://cdn-icons-png.flaticon.com/512/1828/1828884.png" alt="Гемы" class="currency-icon">
+                                <span>290</span>
+                            </div>
                         </div>
+                        <button class="buy-btn" data-item="wine" data-cost="290" data-love="20" data-requests="100">Купить</button>
                     </div>
-                    <button class="buy-btn" data-item="wine" data-cost="290" data-love="20" data-requests="100">Купить</button>
-                </div>
-                
-                <div class="shop-item">
-                    <img src="https://cdn-icons-png.flaticon.com/512/2583/2583344.png" alt="Букет цветов" class="item-image">
-                    <div class="item-info">
-                        <h3 class="item-name">Букет цветов</h3>
-                        <p class="item-description">990 черных роз заставят её проникнуться чувствами и желанием к вам.</p>
-                        <div class="item-price">
-                            <img src="https://cdn-icons-png.flaticon.com/512/1828/1828884.png" alt="Гемы" class="currency-icon">
-                            <span>490</span>
+                    
+                    <div class="shop-item">
+                        <img src="https://cdn-icons-png.flaticon.com/512/2583/2583344.png" alt="Букет цветов" class="item-image">
+                        <div class="item-info">
+                            <h3 class="item-name">Букет цветов</h3>
+                            <p class="item-description">990 черных роз заставят её проникнуться чувствами и желанием к вам.</p>
+                            <div class="item-price">
+                                <img src="https://cdn-icons-png.flaticon.com/512/1828/1828884.png" alt="Гемы" class="currency-icon">
+                                <span>490</span>
+                            </div>
                         </div>
+                        <button class="buy-btn" data-item="flowers" data-cost="490" data-love="35" data-requests="0">Купить</button>
                     </div>
-                    <button class="buy-btn" data-item="flowers" data-cost="490" data-love="35" data-requests="0">Купить</button>
-                </div>
-                
-                <div class="shop-item">
-                    <img src="https://cdn-icons-png.flaticon.com/512/3081/3081989.png" alt="Кожанная Мечта" class="item-image">
-                    <div class="item-info">
-                        <h3 class="item-name">Кожанная Мечта</h3>
-                        <p class="item-description">Кастомная кожанка редчайшего бренда, она будет неимоверно рада и счастлива, наслаждайтесь общением вместе по максимуму!</p>
-                        <div class="item-price">
-                            <img src="https://cdn-icons-png.flaticon.com/512/1828/1828884.png" alt="Гемы" class="currency-icon">
-                            <span>1190</span>
+                    
+                    <div class="shop-item">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3081/3081989.png" alt="Кожанная Мечта" class="item-image">
+                        <div class="item-info">
+                            <h3 class="item-name">Кожанная Мечта</h3>
+                            <p class="item-description">Кастомная кожанка редчайшего бренда, она будет неимоверно рада и счастлива, наслаждайтесь общением вместе по максимуму!</p>
+                            <div class="item-price">
+                                <img src="https://cdn-icons-png.flaticon.com/512/1828/1828884.png" alt="Гемы" class="currency-icon">
+                                <span>1190</span>
+                            </div>
                         </div>
+                        <button class="buy-btn" data-item="jacket" data-cost="1190" data-love="50" data-requests="200">Купить</button>
                     </div>
-                    <button class="buy-btn" data-item="jacket" data-cost="1190" data-love="50" data-requests="200">Купить</button>
                 </div>
             </div>
-        </div>
 
-        <div class="tab-content" id="profile">
-            <div class="card">
-                <h2>Ваш профиль</h2>
-                
-                <div class="profile-stats">
-                    <div class="stat-card">
-                        <div class="stat-value" id="statDays">1</div>
-                        <div class="stat-label">Дней с Никой</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="statGifts">0</div>
-                        <div class="stat-label">Подарков вручено</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="statLove">0</div>
-                        <div class="stat-label">Уровень влюбленности</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="statSpent">0</div>
-                        <div class="stat-label">Гемов потрачено</div>
-                    </div>
-                </div>
-                
-                <div class="achievements">
-                    <h3>Достижения</h3>
+            <div class="tab-content" id="profile">
+                <div class="card">
+                    <h2>Ваш профиль</h2>
                     
-                    <div class="achievement">
-                        <div class="achievement-icon">🥂</div>
-                        <div class="achievement-info">
-                            <div class="achievement-name">Первое свидание</div>
-                            <div class="achievement-description">Подарите Нике первый подарок</div>
+                    <div class="profile-stats">
+                        <div class="stat-card">
+                            <div class="stat-value" id="statDays">1</div>
+                            <div class="stat-label">Дней с Никой</div>
                         </div>
-                        <div class="achievement-status" id="achFirstGift">🔒</div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="statGifts">0</div>
+                            <div class="stat-label">Подарков вручено</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="statLove">0</div>
+                            <div class="stat-label">Уровень влюбленности</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="statSpent">0</div>
+                            <div class="stat-label">Гемов потрачено</div>
+                        </div>
                     </div>
                     
-                    <div class="achievement">
-                        <div class="achievement-icon">💘</div>
-                        <div class="achievement-info">
-                            <div class="achievement-name">Влюбленность</div>
-                            <div class="achievement-description">Достигните 50% уровня влюбленности</div>
+                    <div class="achievements">
+                        <h3>Достижения</h3>
+                        
+                        <div class="achievement">
+                            <div class="achievement-icon">🥂</div>
+                            <div class="achievement-info">
+                                <div class="achievement-name">Первое свидание</div>
+                                <div class="achievement-description">Подарите Нике первый подарок</div>
+                            </div>
+                            <div class="achievement-status" id="achFirstGift">🔒</div>
                         </div>
-                        <div class="achievement-status" id="achHalfLove">🔒</div>
-                    </div>
-                    
-                    <div class="achievement">
-                        <div class="achievement-icon">💍</div>
-                        <div class="achievement-info">
-                            <div class="achievement-name">Сердце Ники</div>
-                            <div class="achievement-description">Достигните 100% уровня влюбленности</div>
+                        
+                        <div class="achievement">
+                            <div class="achievement-icon">💘</div>
+                            <div class="achievement-info">
+                                <div class="achievement-name">Влюбленность</div>
+                                <div class="achievement-description">Достигните 50% уровня влюбленности</div>
+                            </div>
+                            <div class="achievement-status" id="achHalfLove">🔒</div>
                         </div>
-                        <div class="achievement-status" id="achFullLove">🔒</div>
+                        
+                        <div class="achievement">
+                            <div class="achievement-icon">💍</div>
+                            <div class="achievement-info">
+                                <div class="achievement-name">Сердце Ники</div>
+                                <div class="achievement-description">Достигните 100% уровня влюбленности</div>
+                            </div>
+                            <div class="achievement-status" id="achFullLove">🔒</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -513,9 +542,30 @@
         <div class="toast" id="toast"></div>
     </div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+
     <script>
+        // Конфигурация Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyA2pbT4iiVJj13Wa-0yW77TsjPlrzfZJjk",
+            authDomain: "tgtest-ff1d2.firebaseapp.com",
+            databaseURL: "https://tgtest-ff1d2-default-rtdb.firebaseio.com",
+            projectId: "tgtest-ff1d2",
+            storageBucket: "tgtest-ff1d2.firebasestorage.app",
+            messagingSenderId: "571481427242",
+            appId: "1:571481427242:web:51cf2a2e4059085be6a253"
+        };
+
+        // Инициализация Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const auth = firebase.auth();
+
         // Игровые данные
-        const gameData = {
+        let gameData = {
             love: 0,
             gems: 50000,
             requests: 100,
@@ -531,6 +581,9 @@
 
         // Элементы интерфейса
         const elements = {
+            authPanel: document.getElementById('authPanel'),
+            gameContent: document.getElementById('gameContent'),
+            anonAuth: document.getElementById('anonAuth'),
             loveFill: document.getElementById('loveFill'),
             loveHearts: document.getElementById('loveHearts'),
             characterLoveFill: document.getElementById('characterLoveFill'),
@@ -555,11 +608,14 @@
             updateUI();
             setupEventListeners();
             startDayCounter();
+            
+            // Показываем игровой контент
+            elements.authPanel.style.display = 'none';
+            elements.gameContent.style.display = 'block';
         }
 
         // Обновление интерфейса
         function updateUI() {
-            // Обновляем уровень влюбленности
             const lovePercent = Math.min(100, Math.max(0, gameData.love));
             elements.loveFill.style.width = `${lovePercent}%`;
             elements.characterLoveFill.style.width = `${lovePercent}%`;
@@ -567,46 +623,77 @@
             elements.characterLovePercent.textContent = lovePercent;
             elements.statLove.textContent = lovePercent;
             
-            // Обновляем валюту
             elements.gems.textContent = gameData.gems;
             elements.requests.textContent = gameData.requests;
             
-            // Обновляем статистику
             elements.statDays.textContent = gameData.daysWithNika;
             elements.statGifts.textContent = gameData.giftsGiven;
             elements.statSpent.textContent = gameData.gemsSpent;
             
-            // Обновляем кнопки покупки
             elements.buyButtons.forEach(button => {
                 const cost = parseInt(button.getAttribute('data-cost'));
                 button.disabled = gameData.gems < cost;
             });
             
-            // Проверяем достижения
             checkAchievements();
         }
 
         // Проверка достижений
         function checkAchievements() {
-            // Первый подарок
             if (gameData.giftsGiven > 0 && !gameData.achievements.firstGift) {
                 gameData.achievements.firstGift = true;
                 elements.achFirstGift.textContent = '✅';
                 showToast('Достижение разблокировано: Первое свидание!');
+                saveGameData();
             }
             
-            // 50% влюбленности
             if (gameData.love >= 50 && !gameData.achievements.halfLove) {
                 gameData.achievements.halfLove = true;
                 elements.achHalfLove.textContent = '✅';
                 showToast('Достижение разблокировано: Влюбленность!');
+                saveGameData();
             }
             
-            // 100% влюбленности
             if (gameData.love >= 100 && !gameData.achievements.fullLove) {
                 gameData.achievements.fullLove = true;
                 elements.achFullLove.textContent = '✅';
                 showToast('Достижение разблокировано: Сердце Ники!');
+                saveGameData();
+            }
+        }
+
+        // Сохранение данных игры
+        function saveGameData() {
+            const user = auth.currentUser;
+            if (user) {
+                db.ref(`users/${user.uid}`).set(gameData)
+                    .catch(error => {
+                        console.error("Ошибка сохранения:", error);
+                        showToast("Ошибка сохранения данных");
+                    });
+            }
+        }
+
+        // Загрузка данных игры
+        function loadGameData() {
+            const user = auth.currentUser;
+            if (user) {
+                db.ref(`users/${user.uid}`).once('value')
+                    .then(snapshot => {
+                        const data = snapshot.val();
+                        if (data) {
+                            gameData = data;
+                            updateUI();
+                            showToast("Данные загружены");
+                        } else {
+                            // Новый пользователь - сохраняем начальные данные
+                            saveGameData();
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Ошибка загрузки:", error);
+                        showToast("Ошибка загрузки данных");
+                    });
             }
         }
 
@@ -625,20 +712,16 @@
                 gameData.giftsGiven++;
                 gameData.gemsSpent += cost;
                 
-                // Гарантируем, что уровень влюбленности не превысит 100
                 if (gameData.love > 100) {
                     gameData.love = 100;
                 }
                 
                 updateUI();
+                saveGameData();
                 
                 let message = `Вы подарили Нике ${getItemName(itemName)}!`;
-                if (love > 0) {
-                    message += ` Уровень влюбленности +${love}!`;
-                }
-                if (requests > 0) {
-                    message += ` +${requests} запросов!`;
-                }
+                if (love > 0) message += ` Уровень влюбленности +${love}!`;
+                if (requests > 0) message += ` +${requests} запросов!`;
                 
                 showToast(message);
             } else {
@@ -646,7 +729,7 @@
             }
         }
 
-        // Получение названия товара по его ID
+        // Получение названия товара
         function getItemName(itemId) {
             switch(itemId) {
                 case 'wine': return 'Бутылку вина';
@@ -670,11 +753,9 @@
         function switchTab(event) {
             const tabId = event.target.getAttribute('data-tab');
             
-            // Убираем активный класс у всех вкладок и контента
             elements.tabs.forEach(tab => tab.classList.remove('active'));
             elements.tabContents.forEach(content => content.classList.remove('active'));
             
-            // Добавляем активный класс выбранной вкладке и контенту
             event.target.classList.add('active');
             document.getElementById(tabId).classList.add('active');
         }
@@ -685,29 +766,50 @@
                 gameData.daysWithNika++;
                 elements.statDays.textContent = gameData.daysWithNika;
                 
-                // Каждый день немного увеличиваем влюбленность (но не более 100)
                 if (gameData.love < 100) {
                     gameData.love = Math.min(100, gameData.love + 1);
                     updateUI();
+                    saveGameData();
                 }
-            }, 60000); // 1 минута для демонстрации, в реальной игре можно поставить 86400000 (24 часа)
+            }, 60000); // 1 минута для демонстрации
         }
 
         // Настройка обработчиков событий
         function setupEventListeners() {
-            // Переключение вкладок
             elements.tabs.forEach(tab => {
                 tab.addEventListener('click', switchTab);
             });
             
-            // Покупка товаров
             elements.buyButtons.forEach(button => {
                 button.addEventListener('click', buyItem);
             });
+            
+            // Аутентификация анонимно
+            elements.anonAuth.addEventListener('click', () => {
+                auth.signInAnonymously()
+                    .then(() => {
+                        loadGameData();
+                        initGame();
+                    })
+                    .catch(error => {
+                        console.error("Ошибка аутентификации:", error);
+                        showToast("Ошибка входа");
+                    });
+            });
         }
 
-        // Запуск игры при загрузке страницы
-        window.addEventListener('DOMContentLoaded', initGame);
+        // Автоматическая загрузка при аутентификации
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                loadGameData();
+                initGame();
+            }
+        });
+
+        // Проверка аутентификации при загрузке
+        if (auth.currentUser) {
+            initGame();
+        }
     </script>
 </body>
 </html>
