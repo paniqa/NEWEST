@@ -7,12 +7,14 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
             background-color: #121212;
             color: #fff;
             font-family: Arial, sans-serif;
+            height: var(--tg-viewport-height);
+            overflow-y: auto;
         }
         #header {
             display: flex;
@@ -39,8 +41,8 @@
             margin-left: 10px;
         }
         #affection-bar {
-            width: 200px;
-            height: 20px;
+            width: 100px;
+            height: 10px;
             background-color: #333;
             border: 1px solid #ff69b4;
             box-shadow: 0 0 5px rgba(255, 105, 180, 0.5), 0 0 10px rgba(255, 105, 180, 0.5);
@@ -68,6 +70,13 @@
             border: 2px solid #ff69b4;
             box-shadow: 0 0 5px rgba(255, 105, 180, 0.5);
             pointer-events: none;
+        }
+        .card-img-top {
+            max-height: 150px;
+            object-fit: cover;
+        }
+        .card-body {
+            padding: 10px;
         }
         .card-image {
             position: relative;
@@ -149,7 +158,7 @@
         <div class="tab-content" id="myTabContent">
             <div class="tab-pane fade show active" id="character" role="tabpanel" aria-labelledby="character-tab">
                 <div class="card">
-                    <img src="https://via.placeholder.com/150x200?text=Nika" class="card-img-top" alt="Nika">
+                    <img src="https://images.pexels.com/photos/415263/pexels-photo-415263.jpeg" class="card-img-top" alt="Nika">
                     <div class="card-body">
                         <h5 class="card-title">Альтушка Ника</h5>
                         <p class="card-text">Романтичная и стеснительная девушка, которая любит общаться и делиться своими чувствами.</p>
@@ -161,7 +170,7 @@
                     <div class="col-md-4">
                         <div class="card mb-4">
                             <div class="card-image">
-                                <img src="https://images.pexels.com/photos/326503/pexels-photo-326503.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" class="card-img-top" alt="Бутылка вина">
+                                <img src="https://images.pexels.com/photos/128402/pexels-photo-128402.jpeg" class="card-img-top" alt="Бутылка вина">
                                 <div class="info-button">
                                     <i class="fas fa-exclamation-circle"></i>
                                 </div>
@@ -179,7 +188,7 @@
                     <div class="col-md-4">
                         <div class="card mb-4">
                             <div class="card-image">
-                                <img src="https://images.pexels.com/photos/4290944/pexels-photo-4290944.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" class="card-img-top" alt="Букет цветов">
+                                <img src="https://images.pexels.com/photos/1234535/pexels-photo-1234535.jpeg" class="card-img-top" alt="Букет цветов">
                                 <div class="info-button">
                                     <i class="fas fa-exclamation-circle"></i>
                                 </div>
@@ -197,7 +206,7 @@
                     <div class="col-md-4">
                         <div class="card mb-4">
                             <div class="card-image">
-                                <img src="https://images.pexels.com/photos/3759501/pexels-photo-3759501.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" class="card-img-top" alt="Кожаная мечта">
+                                <img src="https://images.pexels.com/photos/298842/pexels-photo-298842.jpeg" class="card-img-top" alt="Кожаная мечта">
                                 <div class="info-button">
                                     <i class="fas fa-exclamation-circle"></i>
                                 </div>
@@ -216,9 +225,9 @@
             </div>
             <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
                 <h3>Профиль пользователя</h3>
-                <p>Всего потрачено гемов: <span id="total-spent">0</span></p>
-                <p>Куплено предметов: <span id="items-purchased">0</span></p>
-                <p>Уровень влюбленности: <span id="affection-level">0</span>%</p>
+                <p><i class="fas fa-gem neon-icon"></i> Всего потрачено гемов: <span id="total-spent">0</span></p>
+                <p><i class="fas fa-shopping-bag neon-icon"></i> Куплено предметов: <span id="items-purchased">0</span></p>
+                <p><i class="fas fa-heart neon-icon"></i> Уровень влюбленности: <span id="affection-level">0</span>%</p>
             </div>
         </div>
     </div>
@@ -231,8 +240,15 @@
         let requests = 100;
         let totalSpent = 0;
         let itemsPurchased = 0;
+        let confirmCallback = null;
 
-        // Load state from cloud storage
+        window.Telegram.WebApp.onEvent('popup_closed', (data) => {
+            if (confirmCallback && data.button_id) {
+                confirmCallback(data.button_id === 'yes');
+                confirmCallback = null;
+            }
+        });
+
         if (window.Telegram.WebApp.CloudStorage) {
             window.Telegram.WebApp.CloudStorage.getItems(['gameState'], (error, result) => {
                 if (!error && result['gameState']) {
@@ -248,42 +264,53 @@
         }
 
         function buyProduct(product) {
-            if (product === 'wine') {
-                if (gems >= 290) {
-                    gems -= 290;
-                    totalSpent += 290;
-                    itemsPurchased++;
-                    affection += 20;
-                    requests += 100;
-                } else {
-                    window.Telegram.WebApp.showAlert('Недостаточно гемов!');
-                    return;
+            window.Telegram.WebApp.openPopup({
+                title: 'Подтверждение',
+                message: 'Вы уверены, что хотите это приобрести?',
+                buttons: [
+                    { id: 'yes', type: 'ok', text: 'Да' },
+                    { id: 'no', type: 'cancel', text: 'Нет' }
+                ]
+            });
+
+            confirmCallback = (confirmed) => {
+                if (confirmed) {
+                    if (product === 'wine') {
+                        if (gems >= 290) {
+                            gems -= 290;
+                            totalSpent += 290;
+                            itemsPurchased++;
+                            affection += 20;
+                            requests += 100;
+                        } else {
+                            window.Telegram.WebApp.showAlert('Недостаточно гемов!');
+                        }
+                    } else if (product === 'flowers') {
+                        if (gems >= 490) {
+                            gems -= 490;
+                            totalSpent += 490;
+                            itemsPurchased++;
+                            affection += 30;
+                            requests += 200;
+                        } else {
+                            window.Telegram.WebApp.showAlert('Недостаточно гемов!');
+                        }
+                    } else if (product === 'leather') {
+                        if (gems >= 1190) {
+                            gems -= 1190;
+                            totalSpent += 1190;
+                            itemsPurchased++;
+                            affection += 50;
+                            requests += 200;
+                        } else {
+                            window.Telegram.WebApp.showAlert('Недостаточно гемов!');
+                        }
+                    }
+                    if (affection > 100) affection = 100;
+                    updateDisplay();
+                    saveState();
                 }
-            } else if (product === 'flowers') {
-                if (gems >= 490) {
-                    gems -= 490;
-                    totalSpent += 490;
-                    itemsPurchased++;
-                    affection += 30;
-                } else {
-                    window.Telegram.WebApp.showAlert('Недостаточно гемов!');
-                    return;
-                }
-            } else if (product === 'leather') {
-                if (gems >= 1190) {
-                    gems -= 1190;
-                    totalSpent += 1190;
-                    itemsPurchased++;
-                    affection += 50;
-                    requests += 200;
-                } else {
-                    window.Telegram.WebApp.showAlert('Недостаточно гемов!');
-                    return;
-                }
-            }
-            if (affection > 100) affection = 100;
-            updateDisplay();
-            saveState();
+            };
         }
 
         function updateDisplay() {
@@ -297,7 +324,7 @@
 
         function updateAffectionBar() {
             const affectionLevel = document.querySelector('.affection-level');
-            const width = (affection / 100) * 100; // percentage
+            const width = (affection / 100) * 100;
             affectionLevel.style.width = width + '%';
         }
 
@@ -316,22 +343,22 @@
             });
         }
 
-        // Handle info buttons
-        document.querySelectorAll('.info-button').forEach(button => {
-            button.addEventListener('click', function() {
-                const overlay = this.parentElement.querySelector('.description-overlay');
-                const img = this.parentElement.querySelector('img');
-                if (overlay.style.display === 'none' || overlay.style.display === '') {
-                    overlay.style.display = 'flex';
-                    img.style.filter = 'blur(5px)';
-                } else {
-                    overlay.style.display = 'none';
-                    img.style.filter = 'none';
-                }
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.info-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const overlay = this.parentElement.querySelector('.description-overlay');
+                    const img = this.parentElement.querySelector('img');
+                    if (overlay.style.display === 'none' || overlay.style.display === '') {
+                        overlay.style.display = 'flex';
+                        img.style.filter = 'blur(5px)';
+                    } else {
+                        overlay.style.display = 'none';
+                        img.style.filter = 'none';
+                    }
+                });
             });
         });
 
-        // Initial display
         updateDisplay();
     </script>
 </body>
