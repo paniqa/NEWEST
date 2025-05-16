@@ -3,363 +3,711 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alta Nika's Mini App</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <title>Альтушка Ника</title>
     <style>
-        body {
-            background-color: #121212;
-            color: #fff;
-            font-family: Arial, sans-serif;
-            height: var(--tg-viewport-height);
-            overflow-y: auto;
+        :root {
+            --primary-color: #ff6b9e;
+            --secondary-color: #9d4edd;
+            --dark-color: #1a1a2e;
+            --light-color: #f8f9fa;
+            --success-color: #4cc9f0;
+            --text-color: #333;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
-        #header {
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--text-color);
+            min-height: 100vh;
+            padding: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 20px;
             padding: 10px;
-            background-color: #1e1e1e;
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            animation: slideDown 0.5s ease;
         }
-        .neon-icon {
-            color: #fff;
-            text-shadow: 0 0 5px #fff, 0 0 10px #ff69b4, 0 0 15px #ff69b4;
-            margin-right: 5px;
+
+        @keyframes slideDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
-        #affection-container {
+
+        .currency {
             display: flex;
             align-items: center;
-            margin-left: 20px;
+            gap: 15px;
         }
-        #affection-container span {
-            margin-right: 10px;
-            color: #fff;
+
+        .currency-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: bold;
         }
-        #affection-container i {
-            margin-left: 10px;
+
+        .currency-icon {
+            width: 20px;
+            height: 20px;
         }
-        #affection-bar {
-            width: 100px;
-            height: 10px;
-            background-color: #333;
-            border: 1px solid #ff69b4;
-            box-shadow: 0 0 5px rgba(255, 105, 180, 0.5), 0 0 10px rgba(255, 105, 180, 0.5);
+
+        .love-meter {
+            width: 100%;
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
             position: relative;
         }
-        .affection-level {
+
+        .love-fill {
             height: 100%;
-            background-color: #ff69b4;
-            box-shadow: 0 0 5px rgba(255, 105, 180, 0.5), 0 0 10px rgba(255, 105, 180, 0.5);
-            transition: width 0.5s ease-in-out;
+            background: linear-gradient(90deg, #ff9a9e 0%, #fad0c4 100%);
+            border-radius: 10px;
             width: 0%;
-        }
-        .card {
-            background-color: #1e1e1e;
-            color: #fff;
+            transition: width 0.5s ease;
             position: relative;
         }
-        .card::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            border: 2px solid #ff69b4;
-            box-shadow: 0 0 5px rgba(255, 105, 180, 0.5);
-            pointer-events: none;
-        }
-        .card-img-top {
-            max-height: 150px;
-            object-fit: cover;
-        }
-        .card-body {
-            padding: 10px;
-        }
-        .card-image {
-            position: relative;
-        }
-        .info-button {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            cursor: pointer;
-            color: #fff;
-            text-shadow: 0 0 5px #fff, 0 0 10px #ff69b4;
-            font-size: 20px;
-        }
-        .description-overlay {
+
+        .love-hearts {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: none;
-            justify-content: center;
+            display: flex;
             align-items: center;
-            color: #fff;
-            font-size: 16px;
-            padding: 20px;
-            box-sizing: border-box;
-            backdrop-filter: blur(5px);
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
         }
-        .card-title {
-            font-family: 'Orbitron', sans-serif;
+
+        .tabs {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            padding: 10px;
+            box-shadow: var(--shadow);
         }
-        .neon-button {
-            background-color: #ff69b4;
-            color: #fff;
-            border: none;
+
+        .tab {
             padding: 10px 20px;
-            font-size: 16px;
             cursor: pointer;
-            box-shadow: 0 0 5px rgba(255, 105, 180, 0.5), 0 0 10px rgba(255, 105, 180, 0.5);
-            transition: all 0.3s ease-in-out;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            color: var(--text-color);
         }
-        .neon-button:hover {
-            box-shadow: 0 0 10px rgba(255, 105, 180, 0.7), 0 0 15px rgba(255, 105, 180, 0.7);
+
+        .tab.active {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-3px);
         }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+        }
+
         .card:hover {
-            transform: scale(1.05);
-            transition: transform 0.3s ease-in-out;
-            box-shadow: 0 0 10px rgba(255, 105, 180, 0.5);
+            transform: translateY(-5px);
+        }
+
+        .character-card {
+            text-align: center;
+        }
+
+        .character-image {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 15px;
+            border: 5px solid var(--primary-color);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .character-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--secondary-color);
+        }
+
+        .character-description {
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .shop-item {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .shop-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .item-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 10px;
+            object-fit: cover;
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-name {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 5px;
+            color: var(--secondary-color);
+        }
+
+        .item-description {
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: #666;
+        }
+
+        .item-price {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .buy-btn {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .buy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .buy-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .achievements {
+            margin-top: 20px;
+        }
+
+        .achievement {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        .achievement-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .achievement-info {
+            flex: 1;
+        }
+
+        .achievement-name {
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .achievement-description {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .character-image {
+                width: 150px;
+                height: 150px;
+            }
+            
+            .profile-stats {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="header" class="container">
-        <div>
-            <i class="fas fa-gem neon-icon"></i> <span id="gems">50000</span>
-            <i class="fas fa-comment neon-icon"></i> <span id="requests">100</span>
-        </div>
-        <div id="affection-container">
-            <span>Влюбленность:</span>
-            <div id="affection-bar">
-                <div class="affection-level"></div>
+    <div class="container">
+        <div class="header">
+            <h1>Альтушка Ника</h1>
+            <div class="currency">
+                <div class="currency-item">
+                    <img src="https://cdn-icons-png.flaticon.com/512/1828/1828884.png" alt="Гемы" class="currency-icon">
+                    <span id="gems">50000</span>
+                </div>
+                <div class="currency-item">
+                    <img src="https://cdn-icons-png.flaticon.com/512/1828/1828915.png" alt="Запросы" class="currency-icon">
+                    <span id="requests">100</span>
+                </div>
             </div>
-            <i class="fas fa-heart neon-icon"></i>
         </div>
-    </div>
-    <div class="container mt-3">
-        <ul class="nav nav-tabs" id="myTab" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="character-tab" data-bs-toggle="tab" data-bs-target="#character" type="button" role="tab" aria-controls="character" aria-selected="true">Персонаж</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="products-tab" data-bs-toggle="tab" data-bs-target="#products" type="button" role="tab" aria-controls="products" aria-selected="false">Товары</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="false">Профиль</button>
-            </li>
-        </ul>
-        <div class="tab-content" id="myTabContent">
-            <div class="tab-pane fade show active" id="character" role="tabpanel" aria-labelledby="character-tab">
-                <div class="card">
-                    <img src="https://images.pexels.com/photos/415263/pexels-photo-415263.jpeg" class="card-img-top" alt="Nika">
-                    <div class="card-body">
-                        <h5 class="card-title">Альтушка Ника</h5>
-                        <p class="card-text">Романтичная и стеснительная девушка, которая любит общаться и делиться своими чувствами.</p>
+
+        <div class="love-meter">
+            <div class="love-fill" id="loveFill"></div>
+            <div class="love-hearts" id="loveHearts">Уровень влюбленности: 0%</div>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" data-tab="character">Персонаж</div>
+            <div class="tab" data-tab="shop">Товары</div>
+            <div class="tab" data-tab="profile">Профиль</div>
+        </div>
+
+        <div class="tab-content active" id="character">
+            <div class="card character-card">
+                <img src="https://i.pinimg.com/736x/2b/5b/0b/2b5b0b3a3a3a3a3a3a3a3a3a3a3a3a3a.jpg" alt="Ника" class="character-image">
+                <h2 class="character-name">Ника</h2>
+                <p class="character-description">
+                    Романтичная и стеснительная девушка с нежным характером. Ника обожает тихие вечера с хорошей книгой и чашкой чая. 
+                    Она немного замкнута в себе, но если найти к ней подход, открывается как цветок, показывая свою теплую и заботливую натуру.
+                    Её сердце - как хрустальный сосуд, который нужно наполнять любовью и вниманием, но очень осторожно, чтобы не разбить.
+                </p>
+                <div class="love-meter">
+                    <div class="love-fill" id="characterLoveFill"></div>
+                    <div class="love-hearts">Уровень влюбленности: <span id="characterLovePercent">0</span>%</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="shop">
+            <div class="card">
+                <h2>Магазин подарков</h2>
+                <p>Выберите подарок для Ники, чтобы увеличить её уровень влюбленности</p>
+                
+                <div class="shop-item">
+                    <img src="https://cdn-icons-png.flaticon.com/512/3050/3050159.png" alt="Бутылка вина" class="item-image">
+                    <div class="item-info">
+                        <h3 class="item-name">Бутылка вина</h3>
+                        <p class="item-description">Ника раскрепощается и желает больше общения, повышается влюбленность и откровенность.</p>
+                        <div class="item-price">
+                            <img src="https://cdn-icons-png.flaticon.com/512/1828/1828884.png" alt="Гемы" class="currency-icon">
+                            <span>290</span>
+                        </div>
+                    </div>
+                    <button class="buy-btn" data-item="wine" data-cost="290" data-love="20" data-requests="100">Купить</button>
+                </div>
+                
+                <div class="shop-item">
+                    <img src="https://cdn-icons-png.flaticon.com/512/2583/2583344.png" alt="Букет цветов" class="item-image">
+                    <div class="item-info">
+                        <h3 class="item-name">Букет цветов</h3>
+                        <p class="item-description">990 черных роз заставят её проникнуться чувствами и желанием к вам.</p>
+                        <div class="item-price">
+                            <img src="https://cdn-icons-png.flaticon.com/512/1828/1828884.png" alt="Гемы" class="currency-icon">
+                            <span>490</span>
+                        </div>
+                    </div>
+                    <button class="buy-btn" data-item="flowers" data-cost="490" data-love="35" data-requests="0">Купить</button>
+                </div>
+                
+                <div class="shop-item">
+                    <img src="https://cdn-icons-png.flaticon.com/512/3081/3081989.png" alt="Кожанная Мечта" class="item-image">
+                    <div class="item-info">
+                        <h3 class="item-name">Кожанная Мечта</h3>
+                        <p class="item-description">Кастомная кожанка редчайшего бренда, она будет неимоверно рада и счастлива, наслаждайтесь общением вместе по максимуму!</p>
+                        <div class="item-price">
+                            <img src="https://cdn-icons-png.flaticon.com/512/1828/1828884.png" alt="Гемы" class="currency-icon">
+                            <span>1190</span>
+                        </div>
+                    </div>
+                    <button class="buy-btn" data-item="jacket" data-cost="1190" data-love="50" data-requests="200">Купить</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="profile">
+            <div class="card">
+                <h2>Ваш профиль</h2>
+                
+                <div class="profile-stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="statDays">1</div>
+                        <div class="stat-label">Дней с Никой</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statGifts">0</div>
+                        <div class="stat-label">Подарков вручено</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statLove">0</div>
+                        <div class="stat-label">Уровень влюбленности</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statSpent">0</div>
+                        <div class="stat-label">Гемов потрачено</div>
+                    </div>
+                </div>
+                
+                <div class="achievements">
+                    <h3>Достижения</h3>
+                    
+                    <div class="achievement">
+                        <div class="achievement-icon">🥂</div>
+                        <div class="achievement-info">
+                            <div class="achievement-name">Первое свидание</div>
+                            <div class="achievement-description">Подарите Нике первый подарок</div>
+                        </div>
+                        <div class="achievement-status" id="achFirstGift">🔒</div>
+                    </div>
+                    
+                    <div class="achievement">
+                        <div class="achievement-icon">💘</div>
+                        <div class="achievement-info">
+                            <div class="achievement-name">Влюбленность</div>
+                            <div class="achievement-description">Достигните 50% уровня влюбленности</div>
+                        </div>
+                        <div class="achievement-status" id="achHalfLove">🔒</div>
+                    </div>
+                    
+                    <div class="achievement">
+                        <div class="achievement-icon">💍</div>
+                        <div class="achievement-info">
+                            <div class="achievement-name">Сердце Ники</div>
+                            <div class="achievement-description">Достигните 100% уровня влюбленности</div>
+                        </div>
+                        <div class="achievement-status" id="achFullLove">🔒</div>
                     </div>
                 </div>
             </div>
-            <div class="tab-pane fade" id="products" role="tabpanel" aria-labelledby="products-tab">
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="card mb-4">
-                            <div class="card-image">
-                                <img src="https://images.pexels.com/photos/128402/pexels-photo-128402.jpeg" class="card-img-top" alt="Бутылка вина">
-                                <div class="info-button">
-                                    <i class="fas fa-exclamation-circle"></i>
-                                </div>
-                                <div class="description-overlay">
-                                    <p>Бутылка Вина - Ника раскрепощается и желает больше общения, повышается влюбленность и откровенность.</p>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <h5 class="card-title">Бутылка вина</h5>
-                                <p class="card-text">Стоимость: 290 гемов</p>
-                                <button class="neon-button" onclick="buyProduct('wine')">Купить</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card mb-4">
-                            <div class="card-image">
-                                <img src="https://images.pexels.com/photos/1234535/pexels-photo-1234535.jpeg" class="card-img-top" alt="Букет цветов">
-                                <div class="info-button">
-                                    <i class="fas fa-exclamation-circle"></i>
-                                </div>
-                                <div class="description-overlay">
-                                    <p>990 черных роз заставят её проникнуться чувствами и желанием к вам.</p>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <h5 class="card-title">Букет цветов</h5>
-                                <p class="card-text">Стоимость: 490 гемов</p>
-                                <button class="neon-button" onclick="buyProduct('flowers')">Купить</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card mb-4">
-                            <div class="card-image">
-                                <img src="https://images.pexels.com/photos/298842/pexels-photo-298842.jpeg" class="card-img-top" alt="Кожаная мечта">
-                                <div class="info-button">
-                                    <i class="fas fa-exclamation-circle"></i>
-                                </div>
-                                <div class="description-overlay">
-                                    <p>Кастомная кожанка редчайшего бренда, она будет неимоверно рада и счастлива, наслаждайтесь общением вместе по максимуму!</p>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <h5 class="card-title">Кожаная мечта</h5>
-                                <p class="card-text">Стоимость: 1190 гемов</p>
-                                <button class="neon-button" onclick="buyProduct('leather')">Купить</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
-                <h3>Профиль пользователя</h3>
-                <p><i class="fas fa-gem neon-icon"></i> Всего потрачено гемов: <span id="total-spent">0</span></p>
-                <p><i class="fas fa-shopping-bag neon-icon"></i> Куплено предметов: <span id="items-purchased">0</span></p>
-                <p><i class="fas fa-heart neon-icon"></i> Уровень влюбленности: <span id="affection-level">0</span>%</p>
-            </div>
         </div>
+
+        <div class="toast" id="toast"></div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
-        window.Telegram.WebApp.ready();
-
-        let affection = 0;
-        let gems = 50000;
-        let requests = 100;
-        let totalSpent = 0;
-        let itemsPurchased = 0;
-        let confirmCallback = null;
-
-        window.Telegram.WebApp.onEvent('popup_closed', (data) => {
-            if (confirmCallback && data.button_id) {
-                confirmCallback(data.button_id === 'yes');
-                confirmCallback = null;
+        // Игровые данные
+        const gameData = {
+            love: 0,
+            gems: 50000,
+            requests: 100,
+            giftsGiven: 0,
+            gemsSpent: 0,
+            daysWithNika: 1,
+            achievements: {
+                firstGift: false,
+                halfLove: false,
+                fullLove: false
             }
-        });
+        };
 
-        if (window.Telegram.WebApp.CloudStorage) {
-            window.Telegram.WebApp.CloudStorage.getItems(['gameState'], (error, result) => {
-                if (!error && result['gameState']) {
-                    const data = JSON.parse(result['gameState']);
-                    affection = data.affection || 0;
-                    gems = data.gems || 50000;
-                    requests = data.requests || 100;
-                    totalSpent = data.totalSpent || 0;
-                    itemsPurchased = data.itemsPurchased || 0;
-                    updateDisplay();
+        // Элементы интерфейса
+        const elements = {
+            loveFill: document.getElementById('loveFill'),
+            loveHearts: document.getElementById('loveHearts'),
+            characterLoveFill: document.getElementById('characterLoveFill'),
+            characterLovePercent: document.getElementById('characterLovePercent'),
+            gems: document.getElementById('gems'),
+            requests: document.getElementById('requests'),
+            statDays: document.getElementById('statDays'),
+            statGifts: document.getElementById('statGifts'),
+            statLove: document.getElementById('statLove'),
+            statSpent: document.getElementById('statSpent'),
+            achFirstGift: document.getElementById('achFirstGift'),
+            achHalfLove: document.getElementById('achHalfLove'),
+            achFullLove: document.getElementById('achFullLove'),
+            toast: document.getElementById('toast'),
+            tabs: document.querySelectorAll('.tab'),
+            tabContents: document.querySelectorAll('.tab-content'),
+            buyButtons: document.querySelectorAll('.buy-btn')
+        };
+
+        // Инициализация игры
+        function initGame() {
+            updateUI();
+            setupEventListeners();
+            startDayCounter();
+        }
+
+        // Обновление интерфейса
+        function updateUI() {
+            // Обновляем уровень влюбленности
+            const lovePercent = Math.min(100, Math.max(0, gameData.love));
+            elements.loveFill.style.width = `${lovePercent}%`;
+            elements.characterLoveFill.style.width = `${lovePercent}%`;
+            elements.loveHearts.textContent = `Уровень влюбленности: ${lovePercent}%`;
+            elements.characterLovePercent.textContent = lovePercent;
+            elements.statLove.textContent = lovePercent;
+            
+            // Обновляем валюту
+            elements.gems.textContent = gameData.gems;
+            elements.requests.textContent = gameData.requests;
+            
+            // Обновляем статистику
+            elements.statDays.textContent = gameData.daysWithNika;
+            elements.statGifts.textContent = gameData.giftsGiven;
+            elements.statSpent.textContent = gameData.gemsSpent;
+            
+            // Обновляем кнопки покупки
+            elements.buyButtons.forEach(button => {
+                const cost = parseInt(button.getAttribute('data-cost'));
+                button.disabled = gameData.gems < cost;
+            });
+            
+            // Проверяем достижения
+            checkAchievements();
+        }
+
+        // Проверка достижений
+        function checkAchievements() {
+            // Первый подарок
+            if (gameData.giftsGiven > 0 && !gameData.achievements.firstGift) {
+                gameData.achievements.firstGift = true;
+                elements.achFirstGift.textContent = '✅';
+                showToast('Достижение разблокировано: Первое свидание!');
+            }
+            
+            // 50% влюбленности
+            if (gameData.love >= 50 && !gameData.achievements.halfLove) {
+                gameData.achievements.halfLove = true;
+                elements.achHalfLove.textContent = '✅';
+                showToast('Достижение разблокировано: Влюбленность!');
+            }
+            
+            // 100% влюбленности
+            if (gameData.love >= 100 && !gameData.achievements.fullLove) {
+                gameData.achievements.fullLove = true;
+                elements.achFullLove.textContent = '✅';
+                showToast('Достижение разблокировано: Сердце Ники!');
+            }
+        }
+
+        // Покупка товара
+        function buyItem(item) {
+            const button = item.target;
+            const cost = parseInt(button.getAttribute('data-cost'));
+            const love = parseInt(button.getAttribute('data-love'));
+            const requests = parseInt(button.getAttribute('data-requests'));
+            const itemName = button.getAttribute('data-item');
+            
+            if (gameData.gems >= cost) {
+                gameData.gems -= cost;
+                gameData.love += love;
+                gameData.requests += requests;
+                gameData.giftsGiven++;
+                gameData.gemsSpent += cost;
+                
+                // Гарантируем, что уровень влюбленности не превысит 100
+                if (gameData.love > 100) {
+                    gameData.love = 100;
                 }
-            });
-        }
-
-        function buyProduct(product) {
-            window.Telegram.WebApp.openPopup({
-                title: 'Подтверждение',
-                message: 'Вы уверены, что хотите это приобрести?',
-                buttons: [
-                    { id: 'yes', type: 'ok', text: 'Да' },
-                    { id: 'no', type: 'cancel', text: 'Нет' }
-                ]
-            });
-
-            confirmCallback = (confirmed) => {
-                if (confirmed) {
-                    if (product === 'wine') {
-                        if (gems >= 290) {
-                            gems -= 290;
-                            totalSpent += 290;
-                            itemsPurchased++;
-                            affection += 20;
-                            requests += 100;
-                        } else {
-                            window.Telegram.WebApp.showAlert('Недостаточно гемов!');
-                        }
-                    } else if (product === 'flowers') {
-                        if (gems >= 490) {
-                            gems -= 490;
-                            totalSpent += 490;
-                            itemsPurchased++;
-                            affection += 30;
-                            requests += 200;
-                        } else {
-                            window.Telegram.WebApp.showAlert('Недостаточно гемов!');
-                        }
-                    } else if (product === 'leather') {
-                        if (gems >= 1190) {
-                            gems -= 1190;
-                            totalSpent += 1190;
-                            itemsPurchased++;
-                            affection += 50;
-                            requests += 200;
-                        } else {
-                            window.Telegram.WebApp.showAlert('Недостаточно гемов!');
-                        }
-                    }
-                    if (affection > 100) affection = 100;
-                    updateDisplay();
-                    saveState();
+                
+                updateUI();
+                
+                let message = `Вы подарили Нике ${getItemName(itemName)}!`;
+                if (love > 0) {
+                    message += ` Уровень влюбленности +${love}!`;
                 }
-            };
-        }
-
-        function updateDisplay() {
-            document.getElementById('gems').textContent = gems;
-            document.getElementById('requests').textContent = requests;
-            document.getElementById('total-spent').textContent = totalSpent;
-            document.getElementById('items-purchased').textContent = itemsPurchased;
-            document.getElementById('affection-level').textContent = affection;
-            updateAffectionBar();
-        }
-
-        function updateAffectionBar() {
-            const affectionLevel = document.querySelector('.affection-level');
-            const width = (affection / 100) * 100;
-            affectionLevel.style.width = width + '%';
-        }
-
-        function saveState() {
-            const data = {
-                affection: affection,
-                gems: gems,
-                requests: requests,
-                totalSpent: totalSpent,
-                itemsPurchased: itemsPurchased
-            };
-            window.Telegram.WebApp.CloudStorage.setItem('gameState', JSON.stringify(data), (error) => {
-                if (error) {
-                    console.error('Ошибка сохранения состояния:', error);
+                if (requests > 0) {
+                    message += ` +${requests} запросов!`;
                 }
+                
+                showToast(message);
+            } else {
+                showToast('Недостаточно гемов!');
+            }
+        }
+
+        // Получение названия товара по его ID
+        function getItemName(itemId) {
+            switch(itemId) {
+                case 'wine': return 'Бутылку вина';
+                case 'flowers': return 'Букет цветов';
+                case 'jacket': return 'Кожаную Мечту';
+                default: return 'подарок';
+            }
+        }
+
+        // Показ уведомления
+        function showToast(message) {
+            elements.toast.textContent = message;
+            elements.toast.classList.add('show');
+            
+            setTimeout(() => {
+                elements.toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Переключение вкладок
+        function switchTab(event) {
+            const tabId = event.target.getAttribute('data-tab');
+            
+            // Убираем активный класс у всех вкладок и контента
+            elements.tabs.forEach(tab => tab.classList.remove('active'));
+            elements.tabContents.forEach(content => content.classList.remove('active'));
+            
+            // Добавляем активный класс выбранной вкладке и контенту
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // Счетчик дней с Никой
+        function startDayCounter() {
+            setInterval(() => {
+                gameData.daysWithNika++;
+                elements.statDays.textContent = gameData.daysWithNika;
+                
+                // Каждый день немного увеличиваем влюбленность (но не более 100)
+                if (gameData.love < 100) {
+                    gameData.love = Math.min(100, gameData.love + 1);
+                    updateUI();
+                }
+            }, 60000); // 1 минута для демонстрации, в реальной игре можно поставить 86400000 (24 часа)
+        }
+
+        // Настройка обработчиков событий
+        function setupEventListeners() {
+            // Переключение вкладок
+            elements.tabs.forEach(tab => {
+                tab.addEventListener('click', switchTab);
+            });
+            
+            // Покупка товаров
+            elements.buyButtons.forEach(button => {
+                button.addEventListener('click', buyItem);
             });
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.info-button').forEach(button => {
-                button.addEventListener('click', function() {
-                    const overlay = this.parentElement.querySelector('.description-overlay');
-                    const img = this.parentElement.querySelector('img');
-                    if (overlay.style.display === 'none' || overlay.style.display === '') {
-                        overlay.style.display = 'flex';
-                        img.style.filter = 'blur(5px)';
-                    } else {
-                        overlay.style.display = 'none';
-                        img.style.filter = 'none';
-                    }
-                });
-            });
-        });
-
-        updateDisplay();
+        // Запуск игры при загрузке страницы
+        window.addEventListener('DOMContentLoaded', initGame);
     </script>
 </body>
 </html>
