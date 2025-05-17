@@ -269,9 +269,25 @@
             font-weight: bold;
             color: var(--primary-color);
         }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255,255,255,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            font-size: 18px;
+        }
     </style>
 </head>
 <body>
+    <div class="loading-overlay" id="loadingOverlay">Загрузка игры...</div>
+    
     <div class="header">
         <div>Чиркаши: <span id="currency">0</span></div>
     </div>
@@ -375,179 +391,277 @@
 
     <script>
         // Инициализация Firebase
-        <script>
-    // Инициализация Firebase
-    const firebaseConfig = {
-        apiKey: "AIzaSyA2pbT4iiVJj13Wa-0yW77TsjPlrzfZJjk",
-        authDomain: "tgtest-ff1d2.firebaseapp.com",
-        databaseURL: "https://tgtest-ff1d2-default-rtdb.firebaseio.com",
-        projectId: "tgtest-ff1d2",
-        storageBucket: "tgtest-ff1d2.appspot.com",
-        messagingSenderId: "571481427242",
-        appId: "1:571481427242:web:51cf2a2e4059085be6a253",
-        measurementId: "G-TPLG8BC6W9"
-    };
-
-    // Инициализируем Firebase
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-
-    // Инициализация Telegram WebApp
-    const tg = window.Telegram?.WebApp;
-    
-    // Генерируем уникальный ID пользователя
-    function getUserId() {
-        if (tg?.initDataUnsafe?.user?.id) {
-            return 'tg_' + tg.initDataUnsafe.user.id;
-        }
-        
-        // Для пользователей без Telegram (тестирование)
-        let userId = localStorage.getItem('userId');
-        if (!userId) {
-            userId = 'guest_' + Math.random().toString(36).substr(2, 9);
-            localStorage.setItem('userId', userId);
-        }
-        return userId;
-    }
-
-    // Состояние игры
-    const gameState = {
-        currency: 0,
-        selectedCharacter: null,
-        inventory: {
-            potion: 0,
-            sword: 0,
-            sock: 0,
-            premium: 0
-        },
-        currentPurchase: null,
-        userId: getUserId(),
-        loaded: false
-    };
-
-    // Элементы интерфейса
-    const elements = {
-        currency: document.getElementById('currency'),
-        monster: document.getElementById('monster'),
-        confirmationOverlay: document.getElementById('confirmationOverlay'),
-        confirmationText: document.getElementById('confirmationText'),
-        potionCount: document.getElementById('potionCount'),
-        swordCount: document.getElementById('swordCount'),
-        sockCount: document.getElementById('sockCount'),
-        premiumCount: document.getElementById('premiumCount')
-    };
-
-    // Функция сохранения игры в Firebase
-    function saveGame() {
-        if (!gameState.loaded) return; // Не сохраняем до загрузки
-        
-        const saveData = {
-            currency: gameState.currency,
-            inventory: gameState.inventory,
-            selectedCharacter: gameState.selectedCharacter,
-            lastUpdated: firebase.database.ServerValue.TIMESTAMP
+        const firebaseConfig = {
+            apiKey: "AIzaSyA2pbT4iiVJj13Wa-0yW77TsjPlrzfZJjk",
+            authDomain: "tgtest-ff1d2.firebaseapp.com",
+            databaseURL: "https://tgtest-ff1d2-default-rtdb.firebaseio.com",
+            projectId: "tgtest-ff1d2",
+            storageBucket: "tgtest-ff1d2.appspot.com",
+            messagingSenderId: "571481427242",
+            appId: "1:571481427242:web:51cf2a2e4059085be6a253",
+            measurementId: "G-TPLG8BC6W9"
         };
-        
-        // Сохраняем в Firebase
-        database.ref('users/' + gameState.userId).set(saveData)
-            .then(() => console.log('Данные сохранены в Firebase'))
-            .catch(error => {
-                console.error('Ошибка сохранения:', error);
-                // Пробуем сохранить в localStorage как резерв
-                try {
-                    localStorage.setItem('gameStateBackup', JSON.stringify(saveData));
-                    console.log('Данные сохранены в localStorage');
-                } catch (e) {
-                    console.error('Ошибка сохранения в localStorage:', e);
-                }
-            });
-    }
 
-    // Функция загрузки игры
-    function loadGame() {
-        // Сначала пробуем загрузить из Firebase
-        database.ref('users/' + gameState.userId).once('value')
-            .then((snapshot) => {
-                if (snapshot.exists()) {
-                    const data = snapshot.val();
-                    applyLoadedData(data);
-                    console.log('Данные загружены из Firebase');
-                } else {
-                    // Если нет данных в Firebase, пробуем localStorage
+        // Инициализируем Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Инициализация Telegram WebApp
+        const tg = window.Telegram?.WebApp;
+        
+        // Генерируем уникальный ID пользователя
+        function getUserId() {
+            if (tg?.initDataUnsafe?.user?.id) {
+                return 'tg_' + tg.initDataUnsafe.user.id;
+            }
+            
+            // Для пользователей без Telegram (тестирование)
+            let userId = localStorage.getItem('userId');
+            if (!userId) {
+                userId = 'guest_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('userId', userId);
+            }
+            return userId;
+        }
+
+        // Состояние игры
+        const gameState = {
+            currency: 0,
+            selectedCharacter: null,
+            inventory: {
+                potion: 0,
+                sword: 0,
+                sock: 0,
+                premium: 0
+            },
+            currentPurchase: null,
+            userId: getUserId(),
+            loaded: false
+        };
+
+        // Элементы интерфейса
+        const elements = {
+            currency: document.getElementById('currency'),
+            monster: document.getElementById('monster'),
+            confirmationOverlay: document.getElementById('confirmationOverlay'),
+            confirmationText: document.getElementById('confirmationText'),
+            potionCount: document.getElementById('potionCount'),
+            swordCount: document.getElementById('swordCount'),
+            sockCount: document.getElementById('sockCount'),
+            premiumCount: document.getElementById('premiumCount'),
+            loadingOverlay: document.getElementById('loadingOverlay')
+        };
+
+        // Функция сохранения игры
+        function saveGame() {
+            if (!gameState.loaded) return;
+            
+            const saveData = {
+                currency: gameState.currency,
+                inventory: gameState.inventory,
+                selectedCharacter: gameState.selectedCharacter,
+                lastUpdated: firebase.database.ServerValue.TIMESTAMP
+            };
+            
+            // Сохраняем в Firebase
+            database.ref('users/' + gameState.userId).set(saveData)
+                .then(() => console.log('Данные сохранены в Firebase'))
+                .catch(error => {
+                    console.error('Ошибка сохранения в Firebase:', error);
+                    // Резервное сохранение в localStorage
                     try {
-                        const backup = localStorage.getItem('gameStateBackup');
-                        if (backup) {
-                            applyLoadedData(JSON.parse(backup));
-                            console.log('Данные загружены из localStorage');
-                        } else {
-                            console.log('Нет сохранённых данных, начинаем новую игру');
-                        }
+                        localStorage.setItem('gameStateBackup_' + gameState.userId, JSON.stringify(saveData));
+                        console.log('Данные сохранены в localStorage');
                     } catch (e) {
-                        console.error('Ошибка загрузки из localStorage:', e);
+                        console.error('Ошибка сохранения в localStorage:', e);
                     }
-                }
-                gameState.loaded = true;
-                updateUI();
-            })
-            .catch((error) => {
-                console.error('Ошибка загрузки из Firebase:', error);
-                // Пробуем загрузить из localStorage
-                try {
-                    const backup = localStorage.getItem('gameStateBackup');
-                    if (backup) {
-                        applyLoadedData(JSON.parse(backup));
-                        console.log('Данные загружены из localStorage');
+                });
+        }
+
+        // Функция загрузки игры
+        function loadGame() {
+            // Показываем загрузку
+            elements.loadingOverlay.style.display = 'flex';
+            
+            // 1. Пробуем загрузить из Firebase
+            database.ref('users/' + gameState.userId).once('value')
+                .then((snapshot) => {
+                    if (snapshot.exists()) {
+                        const data = snapshot.val();
+                        applyLoadedData(data);
+                        console.log('Данные загружены из Firebase');
+                        hideLoading();
+                        return;
                     }
-                } catch (e) {
-                    console.error('Ошибка загрузки из localStorage:', e);
+                    
+                    // 2. Если в Firebase нет данных, пробуем localStorage
+                    loadFromLocalStorage();
+                })
+                .catch((error) => {
+                    console.error('Ошибка загрузки из Firebase:', error);
+                    // Пробуем загрузить из localStorage
+                    loadFromLocalStorage();
+                });
+        }
+
+        function loadFromLocalStorage() {
+            try {
+                const backup = localStorage.getItem('gameStateBackup_' + gameState.userId);
+                if (backup) {
+                    applyLoadedData(JSON.parse(backup));
+                    console.log('Данные загружены из localStorage');
+                } else {
+                    console.log('Нет сохранённых данных, начинаем новую игру');
                 }
-                gameState.loaded = true;
+            } catch (e) {
+                console.error('Ошибка загрузки из localStorage:', e);
+            }
+            hideLoading();
+        }
+
+        function hideLoading() {
+            elements.loadingOverlay.style.display = 'none';
+            gameState.loaded = true;
+        }
+
+        // Применяем загруженные данные
+        function applyLoadedData(data) {
+            if (data.currency) gameState.currency = data.currency;
+            if (data.selectedCharacter) gameState.selectedCharacter = data.selectedCharacter;
+            
+            if (data.inventory) {
+                if (data.inventory.potion) gameState.inventory.potion = data.inventory.potion;
+                if (data.inventory.sword) gameState.inventory.sword = data.inventory.sword;
+                if (data.inventory.sock) gameState.inventory.sock = data.inventory.sock;
+                if (data.inventory.premium) gameState.inventory.premium = data.inventory.premium;
+            }
+            
+            updateUI();
+        }
+
+        // Обновление интерфейса
+        function updateUI() {
+            elements.currency.textContent = gameState.currency;
+            elements.potionCount.textContent = gameState.inventory.potion;
+            elements.swordCount.textContent = gameState.inventory.sword;
+            elements.sockCount.textContent = gameState.inventory.sock;
+            elements.premiumCount.textContent = gameState.inventory.premium;
+        }
+
+        // Игровые функции
+        function earnCurrency() {
+            if (!gameState.loaded) return;
+            
+            const monster = elements.monster;
+            monster.classList.add('hit');
+            setTimeout(() => monster.classList.remove('hit'), 300);
+            
+            gameState.currency++;
+            updateUI();
+            saveGame();
+        }
+
+        function selectCharacter(character) {
+            if (!gameState.loaded) return;
+            
+            gameState.selectedCharacter = character;
+            showAlert(`Вы выбрали персонажа: ${getCharacterName(character)}`);
+            saveGame();
+        }
+
+        function showConfirmation(item, price) {
+            if (!gameState.loaded) return;
+            
+            gameState.currentPurchase = { item, price };
+            elements.confirmationText.textContent = `Вы уверены что хотите купить ${getItemName(item)} за ${price} Чиркашей?`;
+            elements.confirmationOverlay.classList.add('active');
+        }
+
+        function hideConfirmation() {
+            elements.confirmationOverlay.classList.remove('active');
+        }
+
+        function confirmPurchase() {
+            if (!gameState.loaded) return;
+            
+            const { item, price } = gameState.currentPurchase;
+            if (gameState.currency >= price) {
+                gameState.currency -= price;
+                gameState.inventory[item]++;
                 updateUI();
+                showAlert(`Вы успешно купили ${getItemName(item)}!`);
+                saveGame();
+            } else {
+                showAlert('Недостаточно Чиркашей!');
+            }
+            hideConfirmation();
+        }
+
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
             });
-    }
-
-    // Применяем загруженные данные
-    function applyLoadedData(data) {
-        gameState.currency = data.currency || 0;
-        gameState.selectedCharacter = data.selectedCharacter || null;
-        
-        if (data.inventory) {
-            gameState.inventory.potion = data.inventory.potion || 0;
-            gameState.inventory.sword = data.inventory.sword || 0;
-            gameState.inventory.sock = data.inventory.sock || 0;
-            gameState.inventory.premium = data.inventory.premium || 0;
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(tabId).classList.add('active');
+            document.querySelector(`.tab[onclick="showTab('${tabId}')"]`).classList.add('active');
         }
-    }
 
-    // Остальные функции остаются без изменений
-    function updateUI() {
-        elements.currency.textContent = gameState.currency;
-        elements.potionCount.textContent = gameState.inventory.potion;
-        elements.swordCount.textContent = gameState.inventory.sword;
-        elements.sockCount.textContent = gameState.inventory.sock;
-        elements.premiumCount.textContent = gameState.inventory.premium;
-    }
-
-    // Инициализация игры
-    document.addEventListener('DOMContentLoaded', () => {
-        if (tg) {
-            tg.ready();
-            tg.expand();
-            tg.MainButton.setText('Закрыть')
-                .onClick(() => tg.close())
-                .show();
+        function getCharacterName(character) {
+            const names = {
+                josephine: 'Жозефина',
+                alice: 'Алиса',
+                vasilisa: 'Василиса'
+            };
+            return names[character] || character;
         }
-        
-        loadGame();
-        
-        // Автосохранение каждые 30 секунд
-        setInterval(saveGame, 30000);
-        
-        // Сохраняем при закрытии
-        window.addEventListener('beforeunload', saveGame);
-        if (tg) {
-            tg.onEvent('viewportChanged', (e) => {
-                if (e.isStateStable) saveGame();
+
+        function getItemName(item) {
+            const names = {
+                potion: 'Зелье силы',
+                sword: 'Каловой меч',
+                sock: 'Носок невидимости',
+                premium: 'Премиум подписку'
+            };
+            return names[item] || item;
+        }
+
+        function showAlert(message) {
+            if (tg?.showAlert) {
+                tg.showAlert(message);
+            } else {
+                alert(message);
+            }
+        }
+
+        // Инициализация игры
+        document.addEventListener('DOMContentLoaded', () => {
+            if (tg) {
+                tg.ready();
+                tg.expand();
+                tg.MainButton.setText('Закрыть')
+                    .onClick(() => tg.close())
+                    .show();
+            }
+            
+            loadGame();
+            
+            // Автосохранение каждые 30 секунд
+            setInterval(saveGame, 30000);
+            
+            // Сохраняем при закрытии
+            window.addEventListener('beforeunload', saveGame);
+            if (tg) {
+                tg.onEvent('viewportChanged', (e) => {
+                    if (e.isStateStable) saveGame();
+                });
+            }
+        });
+    </script>
+</body>
+</html>
             });
         }
     });
