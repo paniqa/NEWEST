@@ -3,404 +3,572 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alta Nika's Mini App</title>
-    <script src="https://telegram.org/js/telegram-web-app.js" defer></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js" defer></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js" defer></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <title>Чиркаши Игра</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <style>
-        body {
-            background-color: #121212;
-            color: #fff;
-            font-family: Arial, sans-serif;
-            height: var(--tg-viewport-height);
-            overflow-y: auto;
-            margin: 0;
+        :root {
+            --primary-color: #333333;
+            --secondary-color: #555555;
+            --background-color: #f0f0f0;
+            --card-color: #ffffff;
         }
-        #header {
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 10px;
+            background-color: var(--background-color);
+            color: #333;
+        }
+        
+        .header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px;
-            background-color: #1e1e1e;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        .neon-icon {
-            color: #fff;
-            text-shadow: 0 0 5px #fff, 0 0 10px #ff69b4, 0 0 15px #ff69b4;
-            margin-right: 5px;
-        }
-        #affection-container {
+        
+        .tabs {
             display: flex;
-            align-items: center;
-            margin-left: 20px;
-            width: 200px;
+            margin-bottom: 15px;
+            overflow-x: auto;
+            scrollbar-width: none;
         }
-        #affection-container span {
-            margin-right: 10px;
-            color: #fff;
+        
+        .tabs::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .tab {
+            padding: 12px 20px;
+            background-color: #e0e0e0;
+            margin-right: 8px;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
             white-space: nowrap;
+            font-weight: 500;
         }
-        #affection-container i {
-            margin-left: 10px;
+        
+        .tab.active {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
         }
-        #affection-bar {
-            width: 100px;
-            height: 10px;
-            background-color: #333;
-            border: 1px solid #ff69b4;
-            box-shadow: 0 0 5px rgba(255, 105, 180, 0.5), 0 0 10px rgba(255, 105, 180, 0.5);
+        
+        .tab:hover {
+            background-color: #d0d0d0;
+        }
+        
+        .tab-content {
+            display: none;
+            background-color: var(--card-color);
+            padding: 20px;
+            border-radius: 0 10px 10px 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .monster-container {
+            text-align: center;
+            margin: 25px 0;
+        }
+        
+        .monster {
+            width: 180px;
+            height: 180px;
+            margin: 0 auto;
+            background-image: url('https://characterai.io/i/200/static/avatars/uploaded/2023/2/3/hWOg0n8UV8vX6DeFPP2lB9hWr5VQqrcQP7aRs-6-zR8.webp');
+            background-size: cover;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             position: relative;
-            flex-shrink: 0;
-        }
-        .affection-level {
-            height: 100%;
-            background-color: #ff69b4;
-            box-shadow: 0 0 5px rgba(255, 105, 180, 0.5), 0 0 10px rgba(255, 105, 180, 0.5);
-            transition: width 0.5s ease-in-out;
-            width: 0%;
-        }
-        .card {
-            background-color: #1e1e1e;
-            color: #fff;
-            position: relative;
-            border-radius: 8px;
             overflow: hidden;
         }
-        .card::before {
+        
+        .monster::after {
             content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            border: 2px solid #ff69b4;
-            box-shadow: 0 0 5px rgba(255, 105, 180, 0.7), 0 0 10px rgba(255, 105, 180, 0.5);
-            border-radius: 8px;
-            pointer-events: none;
-            z-index: 1;
-        }
-        .card-img-top {
-            max-height: 150px;
-            object-fit: cover;
-            width: 100%;
-        }
-        .card-body {
-            padding: 10px;
-            position: relative;
-        }
-        .card-image {
-            position: relative;
-        }
-        .info-button {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            cursor: pointer;
-            color: #fff;
-            text-shadow: 0 0 5px #fff, 0 0 10px #ff69b4;
-            font-size: 20px;
-            z-index: 2;
-        }
-        .description-overlay {
             position: absolute;
             top: 0;
             left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.1);
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .monster:hover::after {
+            opacity: 1;
+        }
+        
+        .monster.hit {
+            animation: hitAnimation 0.3s;
+        }
+        
+        @keyframes hitAnimation {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.9); filter: brightness(1.5) hue-rotate(-30deg); }
+            100% { transform: scale(1); }
+        }
+        
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .card {
+            background-color: var(--card-color);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .card-image {
             width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: none;
+            height: 120px;
+            object-fit: cover;
+        }
+        
+        .card-title {
+            padding: 12px;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .card-description {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(51, 51, 51, 0.9);
+            color: white;
+            padding: 10px;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .card:hover .card-description {
+            transform: translateY(0);
+        }
+        
+        .confirmation-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.7);
+            display: flex;
             justify-content: center;
             align-items: center;
-            color: #fff;
-            font-size: 16px;
-            padding: 20px;
-            box-sizing: border-box;
-            backdrop-filter: blur(5px);
-            z-index: 2;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
         }
-        .card-title {
-            font-family: 'Orbitron', sans-serif;
+        
+        .confirmation-overlay.active {
+            opacity: 1;
+            visibility: visible;
         }
-        .neon-button {
-            background-color: #ff69b4;
-            color: #fff;
+        
+        .confirmation-box {
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 300px;
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        
+        .confirmation-overlay.active .confirmation-box {
+            transform: scale(1);
+        }
+        
+        .confirmation-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .confirmation-btn {
+            padding: 8px 20px;
             border: none;
-            padding: 10px 20px;
-            font-size: 16px;
+            border-radius: 5px;
             cursor: pointer;
-            box-shadow: 0 0 5px rgba(255, 105, 180, 0.5), 0 0 10px rgba(255, 105, 180, 0.5);
-            transition: all 0.3s ease-in-out;
-            width: 100%;
-            border-radius: 4px;
+            font-weight: 500;
+            transition: all 0.2s;
         }
-        .neon-button:hover {
-            box-shadow: 0 0 10px rgba(255, 105, 180, 0.7), 0 0 15px rgba(255, 105, 180, 0.7);
+        
+        .confirmation-btn.yes {
+            background-color: var(--primary-color);
+            color: white;
         }
-        .card:hover {
-            transform: scale(1.05);
-            transition: transform 0.3s ease-in-out;
-            box-shadow: 0 0 10px rgba(255, 105, 180, 0.5);
+        
+        .confirmation-btn.no {
+            background-color: #e0e0e0;
         }
-        .nav-tabs {
-            border-bottom: 1px solid #ff69b4;
+        
+        .confirmation-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
         }
-        .nav-link {
-            color: #fff;
-            text-shadow: 0 0 5px #ff69b4;
+        
+        .inventory-display {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
         }
-        .nav-link.active {
-            background-color: #ff69b4;
-            color: #fff;
-            border-color: #ff69b4;
+        
+        .inventory-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .inventory-count {
+            font-weight: bold;
+            color: var(--primary-color);
         }
     </style>
 </head>
 <body>
-    <div id="header" class="container">
-        <div>
-            <i class="fas fa-gem neon-icon"></i> <span id="gems">50000</span>
-            <i class="fas fa-comment neon-icon"></i> <span id="requests">100</span>
-        </div>
-        <div id="affection-container">
-            <span>Влюбленность:</span>
-            <div id="affection-bar">
-                <div class="affection-level"></div>
-            </div>
-            <i class="fas fa-heart neon-icon"></i>
-        </div>
+    <div class="header">
+        <div>Чиркаши: <span id="currency">0</span></div>
     </div>
-    <div class="container mt-3">
-        <ul class="nav nav-tabs" id="myTab" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="character-tab" data-bs-toggle="tab" data-bs-target="#character" type="button" role="tab" aria-controls="character" aria-selected="true">Персонаж</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="products-tab" data-bs-toggle="tab" data-bs-target="#products" type="button" role="tab" aria-controls="products" aria-selected="false">Товары</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="false">Профиль</button>
-            </li>
-        </ul>
-        <div class="tab-content" id="myTabContent">
-            <div class="tab-pane fade show active" id="character" role="tabpanel" aria-labelledby="character-tab">
-                <div class="card">
-                    <img src="https://images.pexels.com/photos/415263/pexels-photo-415263.jpeg" class="card-img-top" alt="Nika">
-                    <div class="card-body">
-                        <h5 class="card-title">Альтушка Ника</h5>
-                        <p class="card-text">Романтичная и стеснительная девушка, которая любит общаться и делиться своими чувствами.</p>
-                    </div>
-                </div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="showTab('battle')">Сражение</div>
+        <div class="tab" onclick="showTab('character')">Персонаж</div>
+        <div class="tab" onclick="showTab('items')">Предметы</div>
+        <div class="tab" onclick="showTab('premium')">Премиум</div>
+    </div>
+
+    <div id="battle" class="tab-content active">
+        <h2>Сражение</h2>
+        <p>Кликните на монстра, чтобы заработать Чиркаши</p>
+        <div class="monster-container">
+            <div class="monster" id="monster" onclick="earnCurrency()"></div>
+        </div>
+        
+        <div class="inventory-display" id="inventoryDisplay">
+            <div class="inventory-item">
+                <span>Зелья силы:</span>
+                <span class="inventory-count" id="potionCount">0</span>
             </div>
-            <div class="tab-pane fade" id="products" role="tabpanel" aria-labelledby="products-tab">
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="card mb-4">
-                            <div class="card-image">
-                                <img src="https://images.pexels.com/photos/128198/pexels-photo-128198.jpeg" class="card-img-top" alt="Бутылка вина">
-                                <div class="info-button">
-                                    <i class="fas fa-exclamation-circle"></i>
-                                </div>
-                                <div class="description-overlay">
-                                    <p>Бутылка Вина - Ника раскрепощается и желает больше общения, повышается влюбленность и откровенность.</p>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <h5 class="card-title">Бутылка вина</h5>
-                                <p class="card-text">Стоимость: 290 гемов</p>
-                                <button class="neon-button" onclick="buyProduct('wine')">Купить</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card mb-4">
-                            <div class="card-image">
-                                <img src="https://images.pexels.com/photos/1234535/pexels-photo-1234535.jpeg" class="card-img-top" alt="Букет цветов">
-                                <div class="info-button">
-                                    <i class="fas fa-exclamation-circle"></i>
-                                </div>
-                                <div class="description-overlay">
-                                    <p>990 черных роз заставят её проникнуться чувствами и желанием к вам.</p>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <h5 class="card-title">Букет цветов</h5>
-                                <p class="card-text">Стоимость: 490 гемов</p>
-                                <button class="neon-button" onclick="buyProduct('flowers')">Купить</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card mb-4">
-                            <div class="card-image">
-                                <img src="https://images.pexels.com/photos/298842/pexels-photo-298842.jpeg" class="card-img-top" alt="Кожаная мечта">
-                                <div class="info-button">
-                                    <i class="fas fa-exclamation-circle"></i>
-                                </div>
-                                <div class="description-overlay">
-                                    <p>Кастомная кожанка редчайшего бренда, она будет неимоверно рада и счастлива, наслаждайтесь общением вместе по максимуму!</p>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <h5 class="card-title">Кожаная мечта</h5>
-                                <p class="card-text">Стоимость: 1190 гемов</p>
-                                <button class="neon-button" onclick="buyProduct('leather')">Купить</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="inventory-item">
+                <span>Каловые мечи:</span>
+                <span class="inventory-count" id="swordCount">0</span>
             </div>
-            <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
-                <h3>Профиль пользователя</h3>
-                <p><i class="fas fa-gem neon-icon"></i> Всего потрачено гемов: <span id="total-spent">0</span></p>
-                <p><i class="fas fa-shopping-bag neon-icon"></i> Куплено предметов: <span id="items-purchased">0</span></p>
-                <p><i class="fas fa-heart neon-icon"></i> Уровень влюбленности: <span id="affection-level">0</span>%</p>
+            <div class="inventory-item">
+                <span>Носки невидимости:</span>
+                <span class="inventory-count" id="sockCount">0</span>
+            </div>
+            <div class="inventory-item">
+                <span>Премиум подписки:</span>
+                <span class="inventory-count" id="premiumCount">0</span>
             </div>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <div id="character" class="tab-content">
+        <h2>Персонажи</h2>
+        <div class="cards-container">
+            <div class="card" onclick="selectCharacter('josephine')">
+                <img src="https://i.imgur.com/pXWzE3k.png" class="card-image" alt="Жозефина" onerror="this.src='https://via.placeholder.com/150/333333/FFFFFF?text=Ж'">
+                <div class="card-title">Жозефина</div>
+                <div class="card-description">Выберите этого персонажа</div>
+            </div>
+            <div class="card" onclick="selectCharacter('alice')">
+                <img src="https://i.imgur.com/QZqYV9d.png" class="card-image" alt="Алиса" onerror="this.src='https://via.placeholder.com/150/333333/FFFFFF?text=А'">
+                <div class="card-title">Алиса</div>
+                <div class="card-description">Выберите этого персонажа</div>
+            </div>
+            <div class="card" onclick="selectCharacter('vasilisa')">
+                <img src="https://i.imgur.com/7n8W6cL.png" class="card-image" alt="Василиса" onerror="this.src='https://via.placeholder.com/150/333333/FFFFFF?text=В'">
+                <div class="card-title">Василиса</div>
+                <div class="card-description">Выберите этого персонажа</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="items" class="tab-content">
+        <h2>Магазин</h2>
+        <div class="cards-container">
+            <div class="card" onclick="showConfirmation('potion', 50)">
+                <img src="https://i.imgur.com/LpYtQ3W.png" class="card-image" alt="Зелье силы" onerror="this.src='https://via.placeholder.com/150/333333/FFFFFF?text=Зелье'">
+                <div class="card-title">Зелье силы</div>
+                <div class="card-description">Этот товар можно приобрести за 50 Чиркашей</div>
+            </div>
+            <div class="card" onclick="showConfirmation('sword', 100)">
+                <img src="https://i.imgur.com/9zKm3tP.png" class="card-image" alt="Каловой меч" onerror="this.src='https://via.placeholder.com/150/333333/FFFFFF?text=Меч'">
+                <div class="card-title">Каловой меч</div>
+                <div class="card-description">Этот товар можно приобрести за 100 Чиркашей</div>
+            </div>
+            <div class="card" onclick="showConfirmation('sock', 150)">
+                <img src="https://i.imgur.com/vVk8VYr.png" class="card-image" alt="Носок невидимости" onerror="this.src='https://via.placeholder.com/150/333333/FFFFFF?text=Носок'">
+                <div class="card-title">Носок невидимости</div>
+                <div class="card-description">Этот товар можно приобрести за 150 Чиркашей</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="premium" class="tab-content">
+        <h2>Премиум</h2>
+        <div class="cards-container">
+            <div class="card" onclick="showConfirmation('premium', 250)">
+                <img src="https://i.imgur.com/mR9WwXg.png" class="card-image" alt="Премиум подписка" onerror="this.src='https://via.placeholder.com/150/333333/FFFFFF?text=Премиум'">
+                <div class="card-title">Премиум подписка</div>
+                <div class="card-description">Активируйте премиум на 1 месяц за 250 Чиркашей</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="confirmation-overlay" id="confirmationOverlay">
+        <div class="confirmation-box">
+            <h3 id="confirmationText">Вы уверены что хотите купить этот товар за 100 Чиркашей?</h3>
+            <div class="confirmation-buttons">
+                <button class="confirmation-btn yes" onclick="confirmPurchase()">Да</button>
+                <button class="confirmation-btn no" onclick="hideConfirmation()">Нет</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        if (typeof firebase === 'undefined') {
-            console.error('Firebase SDK не загружен. Проверьте подключение к сети или URL скриптов.');
-            window.Telegram.WebApp.showAlert('Ошибка: Firebase не загружен!');
-            throw new Error('Firebase SDK не загружен');
-        }
-
-        window.Telegram.WebApp.ready();
-
-        // Инициализация переменных
-        let affection = 0;
-        let gems = 50000;
-        let requests = 100;
-        let totalSpent = 0;
-        let itemsPurchased = 0;
-
-        // Firebase конфигурация
+        // Инициализация Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyA2pbT4iiVJj13Wa-0yW77TsjPlrzfZJjk",
             authDomain: "tgtest-ff1d2.firebaseapp.com",
             databaseURL: "https://tgtest-ff1d2-default-rtdb.firebaseio.com",
             projectId: "tgtest-ff1d2",
-            storageBucket: "tgtest-ff1d2.firebasestorage.app",
+            storageBucket: "tgtest-ff1d2.appspot.com",
             messagingSenderId: "571481427242",
             appId: "1:571481427242:web:51cf2a2e4059085be6a253",
             measurementId: "G-TPLG8BC6W9"
         };
+
+        // Инициализируем Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
-        const userId = window.Telegram.WebApp.initDataUnsafe?.user?.id || 'anonymous';
 
-        function buyProduct(product) {
-            let cost, affectionGain, requestGain;
-            if (product === 'wine') {
-                cost = 290;
-                affectionGain = 20;
-                requestGain = 100;
-            } else if (product === 'flowers') {
-                cost = 490;
-                affectionGain = 30;
-                requestGain = 200;
-            } else if (product === 'leather') {
-                cost = 1190;
-                affectionGain = 50;
-                requestGain = 200;
-            }
-
-            if (gems >= cost) {
-                gems -= cost;
-                totalSpent += cost;
-                itemsPurchased++;
-                affection += affectionGain;
-                requests += requestGain;
-                if (affection > 100) affection = 100;
-                updateDisplay();
-                saveState();
-                window.Telegram.WebApp.showAlert('Покупка успешна!');
-            } else {
-                window.Telegram.WebApp.showAlert('Недостаточно гемов!');
-            }
+        // Инициализация Telegram WebApp
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.ready();
+            tg.expand();
+            
+            tg.MainButton.setText('Закрыть')
+                .onClick(() => tg.close())
+                .show();
         }
 
-        function updateDisplay() {
-            document.getElementById('gems').textContent = gems;
-            document.getElementById('requests').textContent = requests;
-            document.getElementById('total-spent').textContent = totalSpent;
-            document.getElementById('items-purchased').textContent = itemsPurchased;
-            document.getElementById('affection-level').textContent = affection;
-            updateAffectionBar();
-        }
+        // Состояние игры
+        const gameState = {
+            currency: 0,
+            selectedCharacter: null,
+            inventory: {
+                potion: 0,
+                sword: 0,
+                sock: 0,
+                premium: 0
+            },
+            currentPurchase: null,
+            userId: tg?.initDataUnsafe?.user?.id || 'default_user'
+        };
 
-        function updateAffectionBar() {
-            const affectionLevel = document.querySelector('.affection-level');
-            if (affectionLevel) {
-                affectionLevel.style.width = affection + '%';
-            }
-        }
+        // Элементы интерфейса
+        const elements = {
+            currency: document.getElementById('currency'),
+            monster: document.getElementById('monster'),
+            confirmationOverlay: document.getElementById('confirmationOverlay'),
+            confirmationText: document.getElementById('confirmationText'),
+            potionCount: document.getElementById('potionCount'),
+            swordCount: document.getElementById('swordCount'),
+            sockCount: document.getElementById('sockCount'),
+            premiumCount: document.getElementById('premiumCount')
+        };
 
-        function saveState() {
-            const data = { affection, gems, requests, totalSpent, itemsPurchased };
-            database.ref('gameState/' + userId).set(data).catch((error) => {
+        // Функция сохранения игры в Firebase
+        function saveGame() {
+            try {
+                database.ref('users/' + gameState.userId).set({
+                    currency: gameState.currency,
+                    inventory: gameState.inventory,
+                    selectedCharacter: gameState.selectedCharacter,
+                    lastUpdated: firebase.database.ServerValue.TIMESTAMP
+                });
+                console.log('Данные сохранены в Firebase');
+            } catch (error) {
                 console.error('Ошибка сохранения:', error);
-                window.Telegram.WebApp.showAlert('Ошибка сохранения данных!');
-            });
+                showAlert('Ошибка сохранения данных. Попробуйте ещё раз.');
+            }
         }
 
-        function loadState() {
-            database.ref('gameState/' + userId).once('value').then((snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    affection = data.affection || 0;
-                    gems = data.gems || 50000;
-                    requests = data.requests || 100;
-                    totalSpent = data.totalSpent || 0;
-                    itemsPurchased = data.itemsPurchased || 0;
-                    updateDisplay();
+        // Функция загрузки игры из Firebase
+        function loadGame() {
+            database.ref('users/' + gameState.userId).once('value').then((snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    gameState.currency = data.currency || 0;
+                    gameState.selectedCharacter = data.selectedCharacter || null;
+                    
+                    if (data.inventory) {
+                        gameState.inventory.potion = data.inventory.potion || 0;
+                        gameState.inventory.sword = data.inventory.sword || 0;
+                        gameState.inventory.sock = data.inventory.sock || 0;
+                        gameState.inventory.premium = data.inventory.premium || 0;
+                    }
+                    
+                    updateUI();
+                    console.log('Игра загружена из Firebase');
+                } else {
+                    console.log('Нет сохранённых данных, начинаем новую игру');
                 }
             }).catch((error) => {
                 console.error('Ошибка загрузки:', error);
-                window.Telegram.WebApp.showAlert('Ошибка загрузки данных!');
+                showAlert('Ошибка загрузки данных. Попробуйте перезагрузить страницу.');
             });
         }
 
+        // Обновление интерфейса
+        function updateUI() {
+            elements.currency.textContent = gameState.currency;
+            elements.potionCount.textContent = gameState.inventory.potion;
+            elements.swordCount.textContent = gameState.inventory.sword;
+            elements.sockCount.textContent = gameState.inventory.sock;
+            elements.premiumCount.textContent = gameState.inventory.premium;
+        }
+
+        // Игровые функции
+        function earnCurrency() {
+            const monster = elements.monster;
+            monster.classList.add('hit');
+            setTimeout(() => monster.classList.remove('hit'), 300);
+            
+            gameState.currency++;
+            updateUI();
+            saveGame();
+        }
+
+        function selectCharacter(character) {
+            gameState.selectedCharacter = character;
+            showAlert(`Вы выбрали персонажа: ${getCharacterName(character)}`);
+            saveGame();
+        }
+
+        function showConfirmation(item, price) {
+            gameState.currentPurchase = { item, price };
+            elements.confirmationText.textContent = `Вы уверены что хотите купить ${getItemName(item)} за ${price} Чиркашей?`;
+            elements.confirmationOverlay.classList.add('active');
+        }
+
+        function hideConfirmation() {
+            elements.confirmationOverlay.classList.remove('active');
+        }
+
+        function confirmPurchase() {
+            const { item, price } = gameState.currentPurchase;
+            if (gameState.currency >= price) {
+                gameState.currency -= price;
+                gameState.inventory[item]++;
+                updateUI();
+                showAlert(`Вы успешно купили ${getItemName(item)}!`);
+                saveGame();
+            } else {
+                showAlert('Недостаточно Чиркашей!');
+            }
+            hideConfirmation();
+        }
+
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(tabId).classList.add('active');
+            document.querySelector(`.tab[onclick="showTab('${tabId}')"]`).classList.add('active');
+        }
+
+        function getCharacterName(character) {
+            const names = {
+                josephine: 'Жозефина',
+                alice: 'Алиса',
+                vasilisa: 'Василиса'
+            };
+            return names[character] || character;
+        }
+
+        function getItemName(item) {
+            const names = {
+                potion: 'Зелье силы',
+                sword: 'Каловой меч',
+                sock: 'Носок невидимости',
+                premium: 'Премиум подписку'
+            };
+            return names[item] || item;
+        }
+
+        function showAlert(message) {
+            if (tg?.showAlert) {
+                tg.showAlert(message);
+            } else {
+                alert(message);
+            }
+        }
+
+        // Инициализация игры
         document.addEventListener('DOMContentLoaded', () => {
-            loadState();
-
-            document.querySelectorAll('.info-button').forEach(button => {
-                button.addEventListener('click', (event) => {
-                    event.stopPropagation();
-                    const parent = button.closest('.card-image');
-                    const overlay = parent.querySelector('.description-overlay');
-                    const img = parent.querySelector('.card-img-top');
-                    if (overlay && img) {
-                        overlay.style.display = overlay.style.display === 'flex' ? 'none' : 'flex';
-                        img.style.filter = overlay.style.display === 'flex' ? 'blur(5px)' : 'none';
-                    }
+            loadGame();
+            updateUI();
+            
+            // Сохраняем при закрытии
+            if (tg) {
+                tg.onEvent('viewportChanged', (e) => {
+                    if (e.isStateStable) saveGame();
                 });
-            });
-
-            document.querySelectorAll('.card').forEach(card => {
-                card.addEventListener('click', (event) => {
-                    const overlay = card.querySelector('.description-overlay');
-                    const img = card.querySelector('.card-img-top');
-                    if (overlay && overlay.style.display === 'flex') {
-                        overlay.style.display = 'none';
-                        img.style.filter = 'none';
-                    }
-                });
-            });
-
-            document.querySelectorAll('.neon-button').forEach(button => {
-                button.addEventListener('click', (event) => {
-                    event.stopPropagation();
-                });
-            });
-
-            document.querySelectorAll('.nav-link').forEach(tab => {
-                tab.addEventListener('click', () => {
-                    setTimeout(updateAffectionBar, 100);
-                });
-            });
+            }
         });
     </script>
 </body>
